@@ -12,5 +12,6 @@ body * {
 }
 
 p {
+    display: none;
     text-align: center;
 }

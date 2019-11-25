@@ -29,7 +29,8 @@ function DateTimePicker(div, options){
     me.cfg = $.extend(
         {
             format: 'Y-m-d H:i:s',
-            placeholder: '_'
+            placeholder: '_',
+            className: ''
         }, 
         options);
 
@@ -38,7 +39,7 @@ function DateTimePicker(div, options){
 
     var trimPlaceholders = function (string){
         //no regexp 'cause potential special chars
-        var str = string.split('');
+        var str = (string+'').split('');
         var i = 0;
         while(str[i] === me.cfg.placeholder) str[i++] = '';
         i = str.length - 1;
@@ -145,9 +146,9 @@ function DateTimePicker(div, options){
         return res;
     }
 
-    var formatter = function() {
+    var formatter = function(format) {
         if(objValue === null) return false;
-        return me.cfg.format
+        return format
             .replace('d',   ('0' +  objValue.getDate()      ).slice(-2))
             .replace('m',   ('0' +  objValue.getMonth()     ).slice(-2))
             .replace('Y',           objValue.getFullYear()  )
@@ -169,7 +170,7 @@ function DateTimePicker(div, options){
     var validateComponentValue = function (component) {
         if(dateComponents[component] === '') return false;
         var value = +dateComponents[component];
-        if (value === "NaN") return false;
+        if (isNaN(value)) return false;
         switch(component){
             case 'd':
                 if(value < 0 || value > 31)
@@ -259,7 +260,12 @@ function DateTimePicker(div, options){
 
     me.input = $('<input type="text" >')
         .appendTo(me.div)
+        .addClass(me.cfg.className)
         .val(applyOnMask());
+
+
+
+        
 
     /* ------------------- public methods */
     me.getDateTime = function () {
@@ -268,7 +274,7 @@ function DateTimePicker(div, options){
 
     me.getValue = function () {
         //at final
-        //return formatter(objValue);
+        //return formatter(me.cfg.format);
 
         //testing
         return {
@@ -379,19 +385,25 @@ function DateTimePicker(div, options){
         innerCaretPos = getInnerCaretPos(this.selectionStart);
     });
     me.input.on('datecomponentchanged', function(e, comp){
-        if(comp) {
-            dateComponents[comp] = trimPlaceholders(dateComponents[comp]);
-            if(!validateComponentValue(comp)){
-                setComponentDefault(comp);
-            }
-        }
+        var comp_value = dateComponents[comp] + '';
+        if(!!trimPlaceholders(comp_value).length)
+            if(comp_value.includes(me.cfg.placeholder))
+                dateComponents[comp] = ('000' + trimPlaceholders(comp_value)).slice(comp === 'Y' ? -4 : -2);
         updateDateObject();
         syncFromDateComponents();
     });
     me.input.on('blur', function () {
+        $(this).trigger('datecomponentchanged', currentComponent);
         if(!trimPlaceholders(inputString).length) clearValue();
         else {
-            //full validation
+            var comps = Object.keys(dateComponents);
+            for(var c in comps){
+                if(!validateComponentValue(comps[c])){
+                    setComponentDefault(comps[c]);
+                }
+            }
+            updateDateObject();
+            syncFromDateComponents();
         }
     });
 }

@@ -37,16 +37,23 @@
         $(function() {
             var f = $('#calendar_filter');
             var fp = new DateTimePicker(f, {
-                format: 'd.m.Y'
+                format: 'Y-m-d H:i:s',
+                className: 'form-control'
             });
+            var v = $('#calendar_verif');
+            var vp = new DateTimePicker(v, {
+                format: 'd.m.Y',
+                className: 'form-control'
+            });
+            
 
-            setInterval(()=>{
-                $('p').html('inputString: ' + fp.getValue().str +
-                            '<br>datestr: '+ fp.getValue().date +
-                            '<br>caretPos: '+ fp.getValue().pos +
-                            '<br>components: '+ fp.getValue().comp +
-                            '<br>component: '+ fp.getValue().cur);
-            }, 200)
+            // setInterval(()=>{
+            //     $('p').html('inputString: ' + fp.getValue().str +
+            //                 '<br>datestr: '+ fp.getValue().date +
+            //                 '<br>caretPos: '+ fp.getValue().pos +
+            //                 '<br>components: '+ fp.getValue().comp +
+            //                 '<br>component: '+ fp.getValue().cur);
+            // }, 200)
         })
     </script>
 </body>
