@@ -37,6 +37,10 @@ function DateTimePicker(div, options){
 
     /* ------------------- util methods */
 
+    /**
+     * Removes placeholders from beginning and ending of input string
+     * @param {string} string - input string 
+     */
     var trimPlaceholders = function (string){
         //no regexp 'cause potential special chars
         var str = (string+'').split('');
@@ -47,6 +51,9 @@ function DateTimePicker(div, options){
         return str.join('');
     } 
 
+    /**
+     * Places cursor in input considering inner cursor value
+     */
     var setInputCaretPos = function () {
         if (innerCaretPos === 0)
             me.input[0].setSelectionRange(0,0);
@@ -60,6 +67,10 @@ function DateTimePicker(div, options){
         }
     }
    
+    /**
+     * Initializes empty input string
+     * @param {string} mask
+     */
     var initInputString = function (mask) {
         var res = '', mask = mask.split('');
         for(i in mask){
@@ -69,6 +80,10 @@ function DateTimePicker(div, options){
         return res;
     }
    
+    /**
+     * Returns position of cursor in inner representation
+     * @param {number} pos - position of cursor in input
+     */
     var getInnerCaretPos = function(pos) {
         var txt = me.input.val().split('');
         var iPos = 0;
@@ -79,6 +94,9 @@ function DateTimePicker(div, options){
         return iPos;
     }
    
+    /**
+     * Returns input string applied on mask
+     */
     var applyOnMask = function () {
         var res = makeMask().split('');
         var str = inputString.split('');
@@ -91,6 +109,9 @@ function DateTimePicker(div, options){
         return res.join('');
     }
 
+    /**
+     * Writes Date() object using date components
+     */
     var updateDateObject = function () {
         objValue = new Date(
             +dateComponents['Y'],
@@ -101,7 +122,10 @@ function DateTimePicker(div, options){
             +dateComponents['s']
         );
     }
-  
+
+    /**
+     * Returns mask considering format
+     */
     var makeMask = function () {
         return me.cfg.format
             .replace('d', me.cfg.placeholder.repeat(2))
@@ -112,6 +136,9 @@ function DateTimePicker(div, options){
             .replace('s', me.cfg.placeholder.repeat(2))
     }
 
+    /**
+     * Returns mask filled with date components positions
+     */
     var makeComponentString = function() {
         return me.cfg.format
             .replace('d', 'dd')
@@ -122,6 +149,10 @@ function DateTimePicker(div, options){
             .replace('s', 'ss');
     }
 
+    /**
+     * Returns active date component
+     * @param {number} pos - position of cursor in input element 
+     */
     var getCurrentComponent = function (pos) {
         var char = componentString[pos];
         if(!/[dmYHis]/.test(char) || typeof char === "undefined")
@@ -129,6 +160,10 @@ function DateTimePicker(div, options){
         return /[dmYHis]/.test(char) ? char : "undefined";
     }
 
+    /**
+     * Returns value of selected date component
+     * @param {string} component - date component 
+     */
     var getComponentValue = function(component){
         var cs = componentString.split('');
         var condensed = [];
@@ -146,6 +181,10 @@ function DateTimePicker(div, options){
         return res;
     }
 
+    /**
+     * Returns string of selected format using Date() object value
+     * @param {string} format 
+     */
     var formatter = function(format) {
         if(objValue === null) return '';
         return format
@@ -156,7 +195,12 @@ function DateTimePicker(div, options){
             .replace('i',   ('0' +  objValue.getMinutes()   ).slice(-2))
             .replace('s',   ('0' +  objValue.getSeconds()   ).slice(-2));
     }
-    
+
+    /**
+     * Writes values of input string into date components.
+     * Triggers datecomponentchanged event, if cursor leaves active date component
+     * @param {number} inputCaretPos - cursor position in input element 
+     */
     var updateComponents = function (inputCaretPos) {
         var lastComponent = currentComponent;
         currentComponent = getCurrentComponent(inputCaretPos);
@@ -167,6 +211,10 @@ function DateTimePicker(div, options){
             me.input.trigger('datecomponentchanged', lastComponent);
     }
 
+    /**
+     * Returns true if value of selected component in valid format and range; false otherwise
+     * @param {string} component - selected component 
+     */
     var validateComponentValue = function (component) {
         if(dateComponents[component] === '') return false;
         var value = +dateComponents[component];
@@ -197,10 +245,17 @@ function DateTimePicker(div, options){
         return true;
     }
 
+    /**
+     * Resets value of selected component to its default
+     * @param {string} component - selected component 
+     */
     var setComponentDefault = function (component) {
         dateComponents[component] = ('000'+dateComponentsDefaults[component]).slice(component === 'Y' ? -4 : -2);
     }
 
+    /**
+     * Sets input string value of date components then displays it considering mask
+     */
     var syncFromDateComponents = function () {
         var str = me.cfg.format.split('');
         var res = '';
@@ -213,6 +268,9 @@ function DateTimePicker(div, options){
         setInputCaretPos(innerCaretPos);
     }
 
+    /**
+     * You'll never know what it does
+     */
     var clearValue = function () {
         dateComponents = {
             'd':0,
@@ -268,10 +326,11 @@ function DateTimePicker(div, options){
         
 
     /* ------------------- public methods */
-    // me.getDateTime = function () {
-    //     return objValue;
-    // }
 
+    /**
+     * Returns picker value with selected representation
+     * @param {string} type - 'date' for Date() object; 'text' for string in selected format  
+     */
     me.getValue = function (type) {
         //at final
         type = type || 'text';
@@ -283,15 +342,6 @@ function DateTimePicker(div, options){
             default:
                 return formatter(me.cfg.format);
         }
-        
-        // testing
-        // return {
-        //     str: inputString,
-        //     pos: innerCaretPos,
-        //     cur: currentComponent,
-        //     comp: JSON.stringify(dateComponents),
-        //     date: objValue
-        // };
     }
 
 
