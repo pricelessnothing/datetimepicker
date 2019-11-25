@@ -24,9 +24,7 @@ function DateTimePicker(div, options){
     var me = this;
     me.div = $(div[0]);
 
-    me.datecomponentchanged = new CustomEvent('datecomponentchanged', {
-        // 'prevComponent' : 'undefined'
-    });
+    me.datecomponentchanged = new CustomEvent('datecomponentchanged');
 
     me.cfg = $.extend(
         {
@@ -149,10 +147,10 @@ function DateTimePicker(div, options){
     }
 
     var formatter = function(format) {
-        if(objValue === null) return false;
+        if(objValue === null) return '';
         return format
             .replace('d',   ('0' +  objValue.getDate()      ).slice(-2))
-            .replace('m',   ('0' +  objValue.getMonth()     ).slice(-2))
+            .replace('m',   ('0' + (objValue.getMonth() + 1)).slice(-2))
             .replace('Y',           objValue.getFullYear()  )
             .replace('H',   ('0' +  objValue.getHours()     ).slice(-2))
             .replace('i',   ('0' +  objValue.getMinutes()   ).slice(-2))
@@ -175,7 +173,7 @@ function DateTimePicker(div, options){
         if (isNaN(value)) return false;
         switch(component){
             case 'd':
-                if(value < 0 || value > 31)
+                if(value < 1 || value > 31)
                     return false;
                 break;
             case 'm':
@@ -240,7 +238,7 @@ function DateTimePicker(div, options){
         
         currentComponent = me.cfg.format[me.cfg.format.search(/[dmYHis]/)],
         dateComponentsDefaults = {
-            'd':0,
+            'd':1,
             'm':1,
             'Y':new Date().getFullYear(),
             'H':0,
@@ -270,22 +268,30 @@ function DateTimePicker(div, options){
         
 
     /* ------------------- public methods */
-    me.getDateTime = function () {
-        return objValue;
-    }
+    // me.getDateTime = function () {
+    //     return objValue;
+    // }
 
-    me.getValue = function () {
+    me.getValue = function (type) {
         //at final
-        //return formatter(me.cfg.format);
-
-        //testing
-        return {
-            str: inputString,
-            pos: innerCaretPos,
-            cur: currentComponent,
-            comp: JSON.stringify(dateComponents),
-            date: objValue
-        };
+        type = type || 'text';
+        switch(type) {
+            case 'text':
+                return formatter(me.cfg.format);
+            case 'date':
+                return objValue;
+            default:
+                return formatter(me.cfg.format);
+        }
+        
+        // testing
+        // return {
+        //     str: inputString,
+        //     pos: innerCaretPos,
+        //     cur: currentComponent,
+        //     comp: JSON.stringify(dateComponents),
+        //     date: objValue
+        // };
     }
 
 
@@ -298,8 +304,6 @@ function DateTimePicker(div, options){
         var k = e.keyCode;
         if (!k === F5)
             e.preventDefault();
-
-        console.log(k);
 
         var inputCaretPos = this.selectionStart;
         var selectionEnd = getInnerCaretPos(this.selectionEnd);
@@ -415,9 +419,9 @@ function DateTimePicker(div, options){
                 if(!validateComponentValue(comps[c])){
                     setComponentDefault(comps[c]);
                 }
-            }
-            updateDateObject();
+            }     
             syncFromDateComponents();
+            updateDateObject();
         }
     });
 }

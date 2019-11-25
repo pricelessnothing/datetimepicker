@@ -19,8 +19,16 @@
     <title>test</title>
 </head>
 <body>
-    <div id="calendar_filter"></div>
-    <div id="calendar_verif"></div>
+    <div class="input-group">
+        <div id="calendar_filter"></div>
+        <button id="fpd">Забрать дату</button>
+        <button id="fpt">Забрать текст</button>
+    </div>
+    <div class="input-group">   
+        <div id="calendar_verif"></div>
+        <button id="vpd">Забрать дату</button>
+        <button id="vpt">Забрать текст</button>
+    </div>
     <p></p>
 
 
@@ -44,6 +52,19 @@
             var vp = new DateTimePicker(v, {
                 format: 'd.m.Y',
                 className: 'form-control'
+            });
+
+            $('#fpd').on('click', e => {
+                alert(fp.getValue('date'));
+            });
+            $('#fpt').on('click', e => {
+                alert(fp.getValue('text'));
+            });
+            $('#vpd').on('click', e => {
+                alert(vp.getValue('date'));
+            });
+            $('#vpt').on('click', e => {
+                alert(vp.getValue('text'));
             });
             
 
