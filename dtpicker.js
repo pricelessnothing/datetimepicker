@@ -30,7 +30,8 @@ function DateTimePicker(div, options){
         {
             format: 'Y-m-d H:i:s',
             placeholder: '_',
-            className: ''
+            className: '',
+            value: null
         }, 
         options);
 
@@ -72,10 +73,34 @@ function DateTimePicker(div, options){
      * @param {string} mask
      */
     var initInputString = function (mask) {
-        var res = '', mask = mask.split('');
-        for(i in mask){
-            if (mask[i] === me.cfg.placeholder)
-                res+=mask[i];
+        if (!objValue){
+            var res = '', mask = mask.split('');
+            for(var i in mask){
+                if (mask[i] === me.cfg.placeholder)
+                    res+=mask[i];
+            }
+        }
+        else {
+            var str = me.cfg.format.split('');
+            var res = '';
+            for (var i in str){
+                if (/[dmYHis]/.test(str[i])){
+                    switch(str[i]){
+                        case 'd':
+                            res += ('0' + objValue.getDate()).slice(-2); break;
+                        case 'm':
+                            res += ('0' + objValue.getMonth()).slice(-2); break;
+                        case 'Y':
+                            res += objValue.getFullYear(); break;
+                        case 'H':
+                            res += ('0' + objValue.getHours()).slice(-2); break;
+                        case 'i':
+                            res += ('0' + objValue.getMinutes()).slice(-2); break;
+                        case 's':
+                            res += ('0' + objValue.getSeconds()).slice(-2); break;
+                    }
+                }
+            }
         }
         return res;
     }
@@ -285,7 +310,7 @@ function DateTimePicker(div, options){
     }
 
     /** Inner state */
-    var objValue = null, //DateTime object or null
+    var objValue = me.cfg.value, //DateTime object or null
         mask = makeMask(),
         inputString = initInputString(mask),
         componentString = makeComponentString(),
@@ -321,8 +346,7 @@ function DateTimePicker(div, options){
         .addClass(me.cfg.className)
         .val(applyOnMask());
 
-
-
+    updateComponents(0);
         
 
     /* ------------------- public methods */

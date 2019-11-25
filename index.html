@@ -46,7 +46,8 @@
             var f = $('#calendar_filter');
             var fp = new DateTimePicker(f, {
                 format: 'Y-m-d H:i:s',
-                className: 'form-control'
+                className: 'form-control',
+                value: new Date()
             });
             var v = $('#calendar_verif');
             var vp = new DateTimePicker(v, {
