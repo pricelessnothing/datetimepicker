@@ -12,6 +12,8 @@ function DateTimePicker(div, options){
         ARROWUP = 38,
         ARROWRIGHT = 39,
         ARROWDOWN = 40,
+        HOME = 36,
+        END = 35,
         TAB = 9,
         F5 = 116,
         AKEY = 65,
@@ -297,10 +299,22 @@ function DateTimePicker(div, options){
         if (!k === F5)
             e.preventDefault();
 
+        console.log(k);
+
         var inputCaretPos = this.selectionStart;
         var selectionEnd = getInnerCaretPos(this.selectionEnd);
 
-        if(k === ARROWLEFT || k === ARROWRIGHT || k === ARROWUP || k === ARROWDOWN){
+        if(k === HOME) {
+            innerCaretPos = 0;
+            setInputCaretPos(innerCaretPos)
+            updateComponents(this.selectionStart);
+        }
+        else if (k === END) {
+            innerCaretPos = inputStringLength;
+            setInputCaretPos(innerCaretPos)
+            updateComponents(this.selectionStart);
+        }
+        else if(k === ARROWLEFT || k === ARROWRIGHT || k === ARROWUP || k === ARROWDOWN){
             //TODO: inc/dec component value if ctrl-up, ctrl-down
             //TODO: switch components if ctrl-left, ctrl-right      
             switch(k){
@@ -393,9 +407,9 @@ function DateTimePicker(div, options){
         syncFromDateComponents();
     });
     me.input.on('blur', function () {
-        $(this).trigger('datecomponentchanged', currentComponent);
         if(!trimPlaceholders(inputString).length) clearValue();
         else {
+            $(this).trigger('datecomponentchanged', currentComponent);
             var comps = Object.keys(dateComponents);
             for(var c in comps){
                 if(!validateComponentValue(comps[c])){
