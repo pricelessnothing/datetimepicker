@@ -512,16 +512,27 @@ function DateTimePicker(div, options){
     });
     me.input.on('paste', function () {
         //TODO: try work with Date() object
-        //TODO: work with no selection
         var clipboardData = event.clipboardData || event.originalEvent.clipboardData || window.clipboardData,
             pastedData = clipboardData.getData('text').split('');
         var selectionStart = getInnerCaretPos(this.selectionStart),
             selectionEnd = getInnerCaretPos(this.selectionEnd);
         var str = inputString.split('');
-        for(var i in pastedData)
-            if (/[0-9]/.test(pastedData[i]) && selectionStart < selectionEnd)
-                str[selectionStart++] = pastedData[i];
+        var approvedToPaste = [];
+        for (var i in pastedData)
+            if(/[0-9]/.test(pastedData[i]))
+                approvedToPaste.push(pastedData[i])
+        if(selectionStart === selectionEnd){
+            var before = str.slice(0, selectionStart);
+            var after = str.slice(selectionStart);
+            str = before.concat(approvedToPaste, after).slice(0, inputStringLength);
+        }
+        else 
+            for(var i in approvedToPaste)
+                if (selectionStart < selectionEnd)
+                    str[selectionStart++] = approvedToPaste[i];
         inputString = str.join('');
+        inputStringToDateComponents();
+        updateDateObject();
         innerCaretPos = selectionStart;
     });
     me.input.on('select', function() {
