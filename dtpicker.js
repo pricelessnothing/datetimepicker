@@ -39,7 +39,13 @@ function DateTimePicker(div, options){
             format: 'Y-m-d H:i:s',
             placeholder: '_',
             className: '',
-            value: null
+            value: null,
+            defaultYear: new Date().getFullYear(),
+            defaultMonth: 1,
+            defaultDate: 1,
+            defaultHours: 0,
+            defaultMinutes: 0,
+            defaultSeconds: 0
         }, 
         options);
 
@@ -323,6 +329,7 @@ function DateTimePicker(div, options){
      * You'll never know what it does
      */
     var clearValue = function () {
+        objValue = null;
         dateComponents = {
             'd':0,
             'm':0,
@@ -331,8 +338,7 @@ function DateTimePicker(div, options){
             'i':0,
             's':0
         };
-        inputString = initInputString(mask);
-        objValue = null;
+        inputString = initInputString(mask); 
     }
 
     /** Inner state */
@@ -347,12 +353,12 @@ function DateTimePicker(div, options){
         
         currentComponent = me.cfg.format[me.cfg.format.search(/[dmYHis]/)],
         dateComponentsDefaults = {
-            'd':1,
-            'm':1,
-            'Y':new Date().getFullYear(),
-            'H':0,
-            'i':0,
-            's':0
+            'd': me.cfg.defaultDate     >= 1 && me.cfg.defaultDate       <= 31      ? me.cfg.defaultDate :      1,
+            'm': me.cfg.defaultMonth    >= 1 && me.cfg.defaultMonth      <= 12      ? me.cfg.defaultMonth :     1,
+            'Y': me.cfg.defaultYear     >= 0 && me.cfg.defaultYear       <= 9999    ? me.cfg.defaultYear :      new Date().getFullYear(),
+            'H': me.cfg.defaultHours    >= 0 && me.cfg.defaultHours      <= 23      ? me.cfg.defaultHours :     0,
+            'i': me.cfg.defaultMinutes  >= 0 && me.cfg.defaultMinutes    <= 59      ? me.cfg.defaultMinutes :   0,
+            's': me.cfg.defaultSeconds  >= 0 && me.cfg.defaultSeconds    <= 59      ? me.cfg.defaultSeconds :   0,
         },
         dateComponents = {
             'd':0,
@@ -509,7 +515,7 @@ function DateTimePicker(div, options){
     });
     me.input.on('datecomponentchanged', function(e, comp){
         var comp_value = dateComponents[comp] + '';
-        if(!trimPlaceholders(comp_value).length)
+        if(trimPlaceholders(comp_value).length)
             if(comp_value.includes(me.cfg.placeholder))
                 dateComponents[comp] = ('000' + trimPlaceholders(comp_value)).slice(comp === 'Y' ? -4 : -2);
         updateDateObject();
