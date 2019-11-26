@@ -379,7 +379,6 @@ function DateTimePicker(div, options){
         .val(displayInputString());
 
     inputStringToDateComponents(0);
-        
 
     /* ------------------- public methods */
 
@@ -414,6 +413,15 @@ function DateTimePicker(div, options){
         else clearValue();    
     }
 
+    /**
+     * Returns date in selected representation
+     * 
+     * @param {string} format - selected representation
+     * @returns date in selected representation
+     */
+    me.getFormattedValue = function (format){
+        return formatter(format);
+    }
 
     /* ------------------- event listeners */
 

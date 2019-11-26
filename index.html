@@ -64,7 +64,7 @@
                 alert(fp.getValue('date'));
             });
             $('#fpt').on('click', e => {
-                alert(fp.getValue('text'));
+                alert(fp.getFormattedValue('Ymd'));
             });
             $('#fps').on('click', e => {
                 fp.setValue(new Date());
