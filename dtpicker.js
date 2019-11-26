@@ -1,3 +1,11 @@
+/**
+ * Creates DateTimePicker instance with selected options and places input inside selected div
+ * 
+ * @class DateTimePicker
+ * @classdesc instance of DateTimePicker
+ * @param {*} div - selected div
+ * @param {*} options - selected options
+ */
 function DateTimePicker(div, options){
 
     var KEY0 = 48,
@@ -5,8 +13,8 @@ function DateTimePicker(div, options){
         _KEY0 = 96,
         _KEY9 = 105,
         DEL = 46,
-        ENTER = 13,
-        ESC = 27,
+        // ENTER = 13,
+        // ESC = 27,
         BACKSPACE = 8,
         ARROWLEFT = 37,
         ARROWUP = 38,
@@ -14,12 +22,12 @@ function DateTimePicker(div, options){
         ARROWDOWN = 40,
         HOME = 36,
         END = 35,
-        TAB = 9,
-        F5 = 116,
-        AKEY = 65,
-        CKEY = 67,
-        VKEY = 86,
-        XKEY = 90
+        // TAB = 9,
+        F5 = 116;
+        // AKEY = 65,
+        // CKEY = 67,
+        // VKEY = 86,
+        // XKEY = 90
 
     var me = this;
     me.div = $(div[0]);
@@ -40,7 +48,9 @@ function DateTimePicker(div, options){
 
     /**
      * Removes placeholders from beginning and ending of input string
-     * @param {string} string - input string 
+     * 
+     * @param {string} string - input string
+     * @returns {string} - trimmed string
      */
     var trimPlaceholders = function (string){
         //no regexp 'cause potential special chars
@@ -50,7 +60,7 @@ function DateTimePicker(div, options){
         i = str.length - 1;
         while(str[i] === me.cfg.placeholder) str[i--] = '';
         return str.join('');
-    } 
+    };
 
     /**
      * Places cursor in input considering inner cursor value
@@ -66,15 +76,17 @@ function DateTimePicker(div, options){
             }
             me.input[0].setSelectionRange(+i+1,+i+1);
         }
-    }
+    };
    
     /**
      * Initializes empty input string
-     * @param {string} mask
+     * 
+     * @param {string} mask - this.cfg.mask
      */
     var initInputString = function (mask) {
+        var res = '';
         if (!objValue){
-            var res = '', mask = mask.split('');
+            var mask = mask.split('');
             for(var i in mask){
                 if (mask[i] === me.cfg.placeholder)
                     res+=mask[i];
@@ -82,7 +94,6 @@ function DateTimePicker(div, options){
         }
         else {
             var str = me.cfg.format.split('');
-            var res = '';
             for (var i in str){
                 if (/[dmYHis]/.test(str[i])){
                     switch(str[i]){
@@ -103,24 +114,28 @@ function DateTimePicker(div, options){
             }
         }
         return res;
-    }
+    };
    
     /**
      * Returns position of cursor in inner representation
+     * 
      * @param {number} pos - position of cursor in input
+     * @returns {number} - position of cursor in inner representation
      */
     var getInnerCaretPos = function(pos) {
         var txt = me.input.val().split('');
         var iPos = 0;
         while(pos--){
             if(txt[pos] >= '0' && txt[pos] <= '9' || txt[pos] === me.cfg.placeholder)
-            iPos++;
+                iPos++;
         }
         return iPos;
-    }
+    };
    
     /**
-     * Returns input string applied on mask
+     * Applies string on mask
+     * 
+     * @returns input string applied on mask
      */
     var applyOnMask = function () {
         var res = makeMask().split('');
@@ -132,7 +147,7 @@ function DateTimePicker(div, options){
             else j++;
         }
         return res.join('');
-    }
+    };
 
     /**
      * Writes Date() object using date components
@@ -146,10 +161,12 @@ function DateTimePicker(div, options){
             +dateComponents['i'],
             +dateComponents['s']
         );
-    }
+    };
 
     /**
-     * Returns mask considering format
+     * i.e. d.m.Y => __.__.____
+     * 
+     * @returns mask considering format
      */
     var makeMask = function () {
         return me.cfg.format
@@ -159,10 +176,12 @@ function DateTimePicker(div, options){
             .replace('H', me.cfg.placeholder.repeat(2))
             .replace('i', me.cfg.placeholder.repeat(2))
             .replace('s', me.cfg.placeholder.repeat(2))
-    }
+    };
 
     /**
      * Returns mask filled with date components positions
+     * 
+     * @returns mask filled with date components positions
      */
     var makeComponentString = function() {
         return me.cfg.format
@@ -172,22 +191,26 @@ function DateTimePicker(div, options){
             .replace('H', 'HH')
             .replace('i', 'ii')
             .replace('s', 'ss');
-    }
+    };
 
     /**
      * Returns active date component
-     * @param {number} pos - position of cursor in input element 
+     * 
+     * @param {number} pos - position of cursor in input element
+     * @returns active component
      */
     var getCurrentComponent = function (pos) {
         var char = componentString[pos];
-        if(!/[dmYHis]/.test(char) || typeof char === "undefined")
+        if(!/[dmYHis]/.test(char) || typeof char === 'undefined')
             char = componentString[pos-1];
-        return /[dmYHis]/.test(char) ? char : "undefined";
-    }
+        return /[dmYHis]/.test(char) ? char : 'undefined';
+    };
 
     /**
      * Returns value of selected date component
-     * @param {string} component - date component 
+     * 
+     * @param {string} component - date component
+     * @returns value of selected date component
      */
     var getComponentValue = function(component){
         var cs = componentString.split('');
@@ -198,17 +221,19 @@ function DateTimePicker(div, options){
             }    
         });
         condensed = condensed.join('');
-        res = '';
+        var res = '';
         for(var i in inputString){
             if(condensed[i] === component)
                 res+=inputString[i];
         }
         return res;
-    }
+    };
 
     /**
      * Returns string of selected format using Date() object value
-     * @param {string} format 
+     * 
+     * @param {string} format - this.cfg.format
+     * @returns string of selected format using Date() object value
      */
     var formatter = function(format) {
         if(objValue === null) return '';
@@ -219,11 +244,12 @@ function DateTimePicker(div, options){
             .replace('H',   ('0' +  objValue.getHours()     ).slice(-2))
             .replace('i',   ('0' +  objValue.getMinutes()   ).slice(-2))
             .replace('s',   ('0' +  objValue.getSeconds()   ).slice(-2));
-    }
+    };
 
     /**
      * Writes values of input string into date components.
      * Triggers datecomponentchanged event, if cursor leaves active date component
+     * 
      * @param {number} inputCaretPos - cursor position in input element 
      */
     var updateComponents = function (inputCaretPos) {
@@ -368,8 +394,13 @@ function DateTimePicker(div, options){
         }
     }
 
+    /**
+     * Sets all inner representations up to selected date
+     * @param {Date} date - selected date
+     */
+    me.setValue = function (date) {
 
-
+    }
 
 
     /* ------------------- event listeners */
@@ -466,8 +497,8 @@ function DateTimePicker(div, options){
             pastedData = clipboardData.getData('text').split('');
         var selectionStart = getInnerCaretPos(this.selectionStart),
             selectionEnd = getInnerCaretPos(this.selectionEnd);
-        str = inputString.split('');
-        for(i in pastedData)
+        var str = inputString.split('');
+        for(var i in pastedData)
             if (/[0-9]/.test(pastedData[i]) && selectionStart < selectionEnd)
                 str[selectionStart++] = pastedData[i];
         inputString = str.join('');
@@ -478,7 +509,7 @@ function DateTimePicker(div, options){
     });
     me.input.on('datecomponentchanged', function(e, comp){
         var comp_value = dateComponents[comp] + '';
-        if(!!trimPlaceholders(comp_value).length)
+        if(!trimPlaceholders(comp_value).length)
             if(comp_value.includes(me.cfg.placeholder))
                 dateComponents[comp] = ('000' + trimPlaceholders(comp_value)).slice(comp === 'Y' ? -4 : -2);
         updateDateObject();
