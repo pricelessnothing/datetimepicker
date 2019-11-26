@@ -85,17 +85,17 @@ function DateTimePicker(div, options){
     };
    
     /**
-     * Initializes empty input string
+     * Initializes input string whose value based on Date() obj
      * 
      * @param {string} mask - this.cfg.mask
      */
-    var initInputString = function (mask) {
+    var objValueToInputString = function () {
         var res = '';
         if (!objValue){
-            var mask = mask.split('');
-            for(var i in mask){
-                if (mask[i] === me.cfg.placeholder)
-                    res+=mask[i];
+            var _mask = mask.split('');
+            for(var i in _mask){
+                if (_mask[i] === me.cfg.placeholder)
+                    res+=_mask[i];
             }
         }
         else {
@@ -106,7 +106,7 @@ function DateTimePicker(div, options){
                         case 'd':
                             res += ('0' + objValue.getDate()).slice(-2); break;
                         case 'm':
-                            res += ('0' + objValue.getMonth()).slice(-2); break;
+                            res += ('0' + (objValue.getMonth()+1)).slice(-2); break;
                         case 'Y':
                             res += objValue.getFullYear(); break;
                         case 'H':
@@ -143,7 +143,7 @@ function DateTimePicker(div, options){
      * 
      * @returns input string applied on mask
      */
-    var applyOnMask = function () {
+    var displayInputString = function () {
         var res = makeMask().split('');
         var str = inputString.split('');
         var i = 0, j = 0;
@@ -258,7 +258,7 @@ function DateTimePicker(div, options){
      * 
      * @param {number} inputCaretPos - cursor position in input element 
      */
-    var updateComponents = function (inputCaretPos) {
+    var inputStringToDateComponents = function (inputCaretPos) {
         var lastComponent = currentComponent;
         currentComponent = getCurrentComponent(inputCaretPos);
         Object.keys(dateComponents).forEach(function(k) {
@@ -313,7 +313,7 @@ function DateTimePicker(div, options){
     /**
      * Sets input string value of date components then displays it considering mask
      */
-    var syncFromDateComponents = function () {
+    var dateComponentsToInputStringAndDisplay = function () {
         var str = me.cfg.format.split('');
         var res = '';
         for(var i in str){
@@ -321,7 +321,7 @@ function DateTimePicker(div, options){
                 res+=dateComponents[str[i]];
         }
         inputString = res;
-        me.input.val(applyOnMask());
+        me.input.val(displayInputString());
         setInputCaretPos(innerCaretPos);
     }
 
@@ -338,13 +338,13 @@ function DateTimePicker(div, options){
             'i':0,
             's':0
         };
-        inputString = initInputString(mask); 
+        inputString = objValueToInputString(); 
     }
 
     /** Inner state */
     var objValue = me.cfg.value, //DateTime object or null
         mask = makeMask(),
-        inputString = initInputString(mask),
+        inputString = objValueToInputString(),
         componentString = makeComponentString(),
 
         inputStringLength = inputString.length,
@@ -376,9 +376,9 @@ function DateTimePicker(div, options){
     me.input = $('<input type="text" >')
         .appendTo(me.div)
         .addClass(me.cfg.className)
-        .val(applyOnMask());
+        .val(displayInputString());
 
-    updateComponents(0);
+    inputStringToDateComponents(0);
         
 
     /* ------------------- public methods */
@@ -405,7 +405,13 @@ function DateTimePicker(div, options){
      * @param {Date} date - selected date
      */
     me.setValue = function (date) {
-
+        if (date instanceof Date && !isNaN(date)){
+            objValue = date;
+            inputString = objValueToInputString();
+            inputStringToDateComponents(0);
+            me.input.val(displayInputString());
+        }
+        else clearValue();    
     }
 
 
@@ -422,12 +428,12 @@ function DateTimePicker(div, options){
         if(k === HOME) {
             innerCaretPos = 0;
             setInputCaretPos(innerCaretPos)
-            updateComponents(this.selectionStart);
+            inputStringToDateComponents(this.selectionStart);
         }
         else if (k === END) {
             innerCaretPos = inputStringLength;
             setInputCaretPos(innerCaretPos)
-            updateComponents(this.selectionStart);
+            inputStringToDateComponents(this.selectionStart);
         }
         else if(k === ARROWLEFT || k === ARROWRIGHT || k === ARROWUP || k === ARROWDOWN){
             //TODO: inc/dec component value if ctrl-up, ctrl-down
@@ -440,7 +446,7 @@ function DateTimePicker(div, options){
                     if(innerCaretPos < inputStringLength) inputCaretPos++;
                     break;
             }
-            updateComponents(inputCaretPos);
+            inputStringToDateComponents(inputCaretPos);
             innerCaretPos = getInnerCaretPos(inputCaretPos);
         }
         else if((k >= KEY0 && k <= KEY9) || (k >= _KEY0 && k <= _KEY9) || k === DEL || k === BACKSPACE){
@@ -451,7 +457,7 @@ function DateTimePicker(div, options){
                     for(var i = innerCaretPos; i < selectionEnd && i < inputStringLength; i++)       
                         str[i] = me.cfg.placeholder;
                     inputString = str.join('');
-                    updateComponents(inputCaretPos+1);
+                    inputStringToDateComponents(inputCaretPos+1);
                 }
             }
             else if(k===DEL){
@@ -463,7 +469,7 @@ function DateTimePicker(div, options){
                     else
                         str[innerCaretPos++] = me.cfg.placeholder;
                     inputString = str.join('');
-                    updateComponents(inputCaretPos+1);
+                    inputStringToDateComponents(inputCaretPos+1);
                 }
             }
             else if(k===BACKSPACE){
@@ -480,7 +486,7 @@ function DateTimePicker(div, options){
                 inputString = str.join('');
                 var newPos = inputCaretPos > 1 ? inputCaretPos - 2 : inputCaretPos - 1;
                 if(newPos < 0) newPos = 0;
-                updateComponents(newPos);
+                inputStringToDateComponents(newPos);
             }  
         }
         inputString = inputString.substring(0, inputStringLength);
@@ -490,10 +496,10 @@ function DateTimePicker(div, options){
     me.input.on('click', function () {
         var inputCaretPos = this.selectionStart;
         innerCaretPos = getInnerCaretPos(inputCaretPos);
-        updateComponents(inputCaretPos);
+        inputStringToDateComponents(inputCaretPos);
     });
     me.input.on('input', function () {
-        me.input.val(applyOnMask());
+        me.input.val(displayInputString());
         setInputCaretPos(innerCaretPos+1);
     });
     me.input.on('paste', function () {
@@ -519,7 +525,7 @@ function DateTimePicker(div, options){
             if(comp_value.includes(me.cfg.placeholder))
                 dateComponents[comp] = ('000' + trimPlaceholders(comp_value)).slice(comp === 'Y' ? -4 : -2);
         updateDateObject();
-        syncFromDateComponents();
+        dateComponentsToInputStringAndDisplay();
     });
     me.input.on('blur', function () {
         if(!trimPlaceholders(inputString).length) clearValue();
@@ -531,7 +537,7 @@ function DateTimePicker(div, options){
                     setComponentDefault(comps[c]);
                 }
             }     
-            syncFromDateComponents();
+            dateComponentsToInputStringAndDisplay();
             updateDateObject();
         }
     });

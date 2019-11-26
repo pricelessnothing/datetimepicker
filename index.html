@@ -21,13 +21,15 @@
 <body>
     <div class="input-group">
         <div id="calendar_filter"></div>
-        <button id="fpd">Забрать дату</button>
-        <button id="fpt">Забрать текст</button>
+        <button id="fpd" class="btn btn-default">Забрать дату</button>
+        <button id="fpt" class="btn btn-default">Забрать текст</button>
+        <button id="fps" class="btn btn-default">Дата - сегодня</button>
     </div>
     <div class="input-group">   
         <div id="calendar_verif"></div>
-        <button id="vpd">Забрать дату</button>
-        <button id="vpt">Забрать текст</button>
+        <button id="vpd" class="btn btn-default">Забрать дату</button>
+        <button id="vpt" class="btn btn-default">Забрать текст</button>
+        <button id="vps" class="btn btn-default">Дата - сегодня</button>
     </div>
     <p></p>
 
@@ -39,7 +41,7 @@
 
 
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-    <script src="dtpicker.js"></script>
+    <script src="dtpicker.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script>
         $(function() {
@@ -47,7 +49,7 @@
             var fp = new DateTimePicker(f, {
                 format: 'Y-m-d H:i:s',
                 className: 'form-control',
-                value: new Date()
+                value: new Date(1997, 11, 9, 12, 12, 12)
             });
             var v = $('#calendar_verif');
             var vp = new DateTimePicker(v, {
@@ -64,13 +66,19 @@
             $('#fpt').on('click', e => {
                 alert(fp.getValue('text'));
             });
+            $('#fps').on('click', e => {
+                fp.setValue(new Date());
+            });
+
             $('#vpd').on('click', e => {
                 alert(vp.getValue('date'));
             });
             $('#vpt').on('click', e => {
                 alert(vp.getValue('text'));
             });
-            
+            $('#vps').on('click', e => {
+                vp.setValue(new Date());
+            });
 
             // setInterval(()=>{
             //     $('p').html('inputString: ' + fp.getValue().str +
