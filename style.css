@@ -14,3 +14,7 @@ body * {
 p {
     text-align: center;
 }
+
+.invalid {
+    color: red;
+}

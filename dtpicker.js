@@ -13,7 +13,7 @@ function DateTimePicker(div, options){
         _KEY0 = 96,
         _KEY9 = 105,
         DEL = 46,
-        // ENTER = 13,
+        ENTER = 13,
         // ESC = 27,
         BACKSPACE = 8,
         ARROWLEFT = 37,
@@ -45,7 +45,8 @@ function DateTimePicker(div, options){
             defaultDate: 1,
             defaultHours: 0,
             defaultMinutes: 0,
-            defaultSeconds: 0
+            defaultSeconds: 0,
+            invalidClass: 'invalid'
         }, 
         options);
 
@@ -341,6 +342,25 @@ function DateTimePicker(div, options){
         inputString = objValueToInputString(); 
     }
 
+    /**
+     * Toggles input class depending on all date components are in ranges
+     */
+    var checkValidity = function() {
+        var flag = true;
+        var c = me.cfg.format.split('').filter(function(el) {
+            return /[dmYHis]/.test(el);
+        });
+        if (trimPlaceholders(inputString).length != 0){
+            for (var i = 0; i < c.length; i++){
+                if (!validateComponentValue(c[i])){
+                    flag = false;
+                    break;
+                }
+            }
+        }
+        me.input.toggleClass(me.cfg.invalidClass, !flag);
+    }
+
     /** Inner state */
     var objValue = me.cfg.value, //DateTime object or null
         mask = makeMask(),
@@ -425,7 +445,7 @@ function DateTimePicker(div, options){
 
     /* ------------------- event listeners */
 
-    me.input.on('keydown', function(e){
+    me.input.on('keydown.dtpicker', function(e){
         var k = e.keyCode;
         if (!k === F5)
             e.preventDefault();
@@ -456,6 +476,12 @@ function DateTimePicker(div, options){
             }
             inputStringToDateComponents(inputCaretPos);
             innerCaretPos = getInnerCaretPos(inputCaretPos);
+        }
+        else if (k === ENTER){
+            var i = this.selectionStart;
+            me.input.trigger('blur');
+            me.input.focus();
+            this.selectionStart = i;
         }
         else if((k >= KEY0 && k <= KEY9) || (k >= _KEY0 && k <= _KEY9) || k === DEL || k === BACKSPACE){
             var str = inputString.split('');
@@ -501,16 +527,17 @@ function DateTimePicker(div, options){
         if(!trimPlaceholders(inputString).length) clearValue();
     });
 
-    me.input.on('click', function () {
+    me.input.on('click.dtpicker', function () {
         var inputCaretPos = this.selectionStart;
         innerCaretPos = getInnerCaretPos(inputCaretPos);
         inputStringToDateComponents(inputCaretPos);
     });
-    me.input.on('input', function () {
+    me.input.on('input.dtpicker', function () {
         me.input.val(displayInputString());
         setInputCaretPos(innerCaretPos+1);
+        checkValidity();
     });
-    me.input.on('paste', function () {
+    me.input.on('paste.dtpicker', function () {
         //TODO: try work with Date() object
         var clipboardData = event.clipboardData || event.originalEvent.clipboardData || window.clipboardData,
             pastedData = clipboardData.getData('text').split('');
@@ -535,10 +562,10 @@ function DateTimePicker(div, options){
         updateDateObject();
         innerCaretPos = selectionStart;
     });
-    me.input.on('select', function() {
+    me.input.on('select.dtpicker', function() {
         innerCaretPos = getInnerCaretPos(this.selectionStart);
     });
-    me.input.on('datecomponentchanged', function(e, comp){
+    me.input.on('datecomponentchanged.dtpicker', function(e, comp){
         var comp_value = dateComponents[comp] + '';
         if(trimPlaceholders(comp_value).length)
             if(comp_value.includes(me.cfg.placeholder))
@@ -546,10 +573,10 @@ function DateTimePicker(div, options){
         updateDateObject();
         dateComponentsToInputStringAndDisplay();
     });
-    me.input.on('blur', function () {
+    me.input.on('blur.dtpicker', function () {
         if(!trimPlaceholders(inputString).length) clearValue();
         else {
-            $(this).trigger('datecomponentchanged', currentComponent);
+            $(this).trigger('datecomponentchanged.dtpicker', currentComponent);
             var comps = Object.keys(dateComponents);
             for(var c in comps){
                 if(!validateComponentValue(comps[c])){
@@ -559,5 +586,6 @@ function DateTimePicker(div, options){
             dateComponentsToInputStringAndDisplay();
             updateDateObject();
         }
+        checkValidity();
     });
 }
