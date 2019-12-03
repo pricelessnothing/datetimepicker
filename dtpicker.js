@@ -46,7 +46,8 @@ function DateTimePicker(div, options){
             defaultHours: 0,
             defaultMinutes: 0,
             defaultSeconds: 0,
-            invalidClass: 'invalid'
+            invalidClass: 'invalid',
+            datePicker: false
         }, 
         options);
 
@@ -361,6 +362,242 @@ function DateTimePicker(div, options){
         me.input.toggleClass(me.cfg.invalidClass, !flag);
     }
 
+    /**
+     * Displays required grid and header
+     * 
+     * @param {string} state - month, year, decade 
+     * @param {Date} date 
+     */
+    var navigateDatePicker = function (state, date) {
+        var d = date.getDate(),
+            m = date.getMonth(),
+            y = date.getFullYear(),
+            h = date.getHours(),
+            i = date.getMinutes(),
+            s = date.getSeconds();
+        me.datePicker.div.find('span').off('.dtpicker_header');
+        me.datePicker.div.find('.dtpicker_grid').children().hide();
+        me.datePicker.div.find('.today').on('click.dtpicker_header', function(){
+            navigateDatePicker('month', new Date());
+        })
+        switch(state){
+            case 'month':
+                var months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                me.datePicker.div.find('.text')
+                    .html(months[date.getMonth()] + ' '+ y)
+                    .removeClass('stop')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('year', date);
+                    });
+                me.datePicker.div.find('.prev')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('month', new Date(y, m-1, d, h, i, s));
+                    });
+                me.datePicker.div.find('.next')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('month', new Date(y, m+1, d, h, i, s));
+                    });
+                displayDayGrid(date);
+                break;
+            case 'year':
+                me.datePicker.div.find('.text')
+                    .html(y)
+                    .removeClass('stop')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('decade', date);
+                    });
+                me.datePicker.div.find('.prev')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('year', new Date(y-1, m, d, h, i, s));
+                    });
+                me.datePicker.div.find('.next')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('year', new Date(y+1, m, d, h, i, s));
+                    });
+                displayMonthGrid(date);
+                break;
+            case 'decade':
+                me.datePicker.div.find('.text')
+                    .html(Math.floor(y/10)*10 + ' - ' + (Math.floor(y/10)*10+10))
+                    .addClass('stop');
+                me.datePicker.div.find('.prev')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('decade', new Date(y-10, m, d, h, i, s));
+                    });
+                me.datePicker.div.find('.next')
+                    .on('click.dtpicker_header', function () {
+                        navigateDatePicker('decade', new Date(y+10, m, d, h, i, s));
+                    });
+                displayYearGrid(date);
+                break;
+        }
+        setValue(date);
+    }
+
+    /**
+     * Displays day grid
+     * 
+     * @param {Date} date - initial picker value 
+     */
+    var displayDayGrid = function(date){
+        me.datePicker.div.find('.dtpicker_grid .day').off('.dtpicker_grid').removeClass('selected prevMonth nextMonth');
+        me.datePicker.div.find('.day_grid').show();
+        var y = date.getFullYear(), 
+            m = date.getMonth(),
+            today = date.getDate(),
+            h = objValue.getHours(),
+            min = objValue.getMinutes(),
+            s = objValue.getSeconds(),
+            first = new Date(y, m, 1).getDay(),
+            lastPrev = new Date(y, m, 0).getDate(),
+            thisMonthDays = new Date(y, m + 1, 0).getDate();
+            first = first ? first - 1 : 6;
+        var prevMonthOffset = first ? 0 : 1;
+        for(var i = 0; i < first + 7*prevMonthOffset; i++)
+            me.datePicker.dayGrid[0][first + 7*prevMonthOffset - i - 1].html(lastPrev - i)
+                .addClass('prevMonth')
+                .on('click.dtpicker_grid', function () {
+                    var date = new Date(y, m-1, Number($(this).html()), h, min, s);
+                    navigateDatePicker('month', date);
+                });
+        for(var d = 0; d < thisMonthDays; d++){
+            me.datePicker.dayGrid[Math.floor((first + d)/7)+prevMonthOffset][(first+d)%7]
+                .html(d+1)
+                .toggleClass('selected', today === d + 1)
+                .on('click.dtpicker_grid', function () {
+                    var date = new Date(y, m, Number($(this).html()), h, min, s);
+                    setValue(date);
+                    $('.dtpicker_grid .selected').removeClass('selected');
+                    $(this).addClass('selected');
+                }); 
+        }
+        for(d, i = 1; i < 43 - thisMonthDays - first - 7*prevMonthOffset; d++, i++){
+            me.datePicker.dayGrid[Math.floor((first + d)/7)+prevMonthOffset][(first+d)%7]
+                .html(i)
+                .addClass('nextMonth')
+                .on('click.dtpicker_grid', function () {
+                    var date = new Date(y, m+1, $(this).html(), h, min, s);
+                    navigateDatePicker('month', date);
+                });
+        }
+    }
+
+    var displayMonthGrid = function(date){
+        var y = date.getFullYear(),
+            m = date.getMonth(),
+            d = date.getDate(),
+            h = date.getHours(),
+            i = date.getMinutes(),
+            s = date.getSeconds();
+        me.datePicker.div.find('.month_grid').show();
+        var months = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
+        for(var j = 0; j < 4; j++) {
+            me.datePicker.monthGrid[0][j]
+                .html(months[j+8])
+                .addClass('prevYear')
+                .data('target-month', j+8)
+                .on('click.dtpicker_grid', function () {
+                    navigateDatePicker('month', new Date(y-1, $(this).data('target-month'), d, h, i, s));
+                });
+            me.datePicker.monthGrid[4][j]
+                .html(months[j])
+                .addClass('nextYear')
+                .data('target-month', j)
+                .on('click.dtpicker_grid', function () {
+                    navigateDatePicker('month', new Date(y+1, $(this).data('target-month'), d, h, i, s));
+                });
+        }
+        for(j = 0; j < 12; j++)
+            me.datePicker.monthGrid[1+Math.floor(j / 4)][j % 4]
+                .html(months[j])
+                .toggleClass('selected', j === m)
+                .data('target-month', j)
+                .on('click.dtpicker_grid', function (){
+                    navigateDatePicker('month', new Date(y, $(this).data('target-month'), d, h, i, s));
+                });
+    }
+
+    var displayYearGrid = function(date){
+        var y = date.getFullYear(),
+            m = date.getMonth(),
+            d = date.getDate(),
+            h = date.getHours(),
+            i = date.getMinutes(),
+            s = date.getSeconds();
+        var decade = Math.floor(y/10)*10;
+        me.datePicker.div.find('.year_grid').show();
+        for(var j = 0; j < 3; j++){
+            me.datePicker.yearGrid[0][j]
+                .html(decade - (3 - j))
+                .addClass('prevDecade')                
+                .on('click.dtpicker_grid', function (){
+                    navigateDatePicker('year', new Date(Number($(this).html()), m, d, h, i, s));
+                });
+            me.datePicker.yearGrid[3][j+1]
+                .html(decade + 10 + j)
+                .addClass('nextDecade')                
+                .on('click.dtpicker_grid', function (){
+                    navigateDatePicker('year', new Date(Number($(this).html()), m, d, h, i, s));
+                });
+        }
+        for(j = 0; j < 10; j++){
+            me.datePicker.yearGrid[Math.floor((j+3)/4)][(j+3)%4]
+                .html(decade+j)
+                .toggleClass('selected', decade + j === y)
+                .on('click.dtpicker_grid', function (){
+                    navigateDatePicker('year', new Date(Number($(this).html()), m, d, h, i, s));
+                });
+        }
+    }
+
+    var initDayGrid = function(){
+        var dayGrid = $('<div class="day_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
+        var arr = [];
+        for(var w = 0; w < 6; w++){
+            arr[w] = [];
+            for(var d = 0; d < 7; d++)
+                arr[w][d] = $('<div class="day"></div>').appendTo(dayGrid);
+        }
+        return arr;
+    }
+
+    var initMonthGrid = function(){
+        var monthGrid = $('<div class="month_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
+        var arr = [];
+        for(var i = 0; i < 5; i++){
+            arr[i] = [];
+            for(var j = 0; j < 4; j++)
+                arr[i][j] = $('<div class="month"></div>').appendTo(monthGrid);
+        }
+        return arr;
+    }
+
+    var initYearGrid = function(){
+        var yearGrid = $('<div class="year_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
+        var arr = [];
+        for(var i = 0; i < 4; i++){
+            arr[i] = [];
+            for(var j = 0; j < 4; j++)
+                arr[i][j] = $('<div class="year"></div>').appendTo(yearGrid);
+        }
+        return arr;
+    }
+
+    var appendDatePicker = function () {
+        me.div.prop('position', 'relative');
+        me.datePicker = {};
+        me.datePicker.div = $('<div class="dtpicker_datepicker"><header></header><div class="dtpicker_grid"></div></div>')
+            .appendTo(me.div)
+            .css('top', me.input.outerHeight()+'px');
+        me.datePicker.header = $('<span class="prev"></span><span class="today"></span><span class="text"></span><span class="next"></span<span>')
+            .appendTo(me.datePicker.div.find('header'));
+        me.datePicker.dayGrid = initDayGrid();
+        me.datePicker.monthGrid = initMonthGrid();
+        me.datePicker.yearGrid = initYearGrid();
+        var val = (me.cfg.value instanceof Date && !isNaN(me.cfg.value)) ? me.cfg.value : new Date();
+        navigateDatePicker('month',val);
+    }
+
     /** Inner state */
     var objValue = me.cfg.value, //DateTime object or null
         mask = makeMask(),
@@ -398,6 +635,10 @@ function DateTimePicker(div, options){
         .addClass(me.cfg.className)
         .val(displayInputString());
 
+    if (me.cfg.datePicker === true) {
+        appendDatePicker();
+    }
+
     inputStringToDateComponents(0);
 
     /* ------------------- public methods */
@@ -423,7 +664,7 @@ function DateTimePicker(div, options){
      * Sets all inner representations up to selected date
      * @param {Date} date - selected date
      */
-    me.setValue = function (date) {
+    function setValue(date) {
         if (date instanceof Date && !isNaN(date)){
             objValue = date;
             inputString = objValueToInputString();
@@ -432,6 +673,7 @@ function DateTimePicker(div, options){
         }
         else clearValue();    
     }
+    me.setValue = setValue;
 
     /**
      * Returns date in selected representation
