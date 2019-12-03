@@ -7,11 +7,13 @@
     z-index: 99;
     left: 0;
     box-sizing: border-box;
+    display: none;
 }
 
 .dtpicker_datepicker * {
     box-sizing: border-box;
     width:100%;
+    user-select: none;
 }
 
 /* HEADER */
@@ -81,8 +83,23 @@
 /* FOOTER */
 
 .dtpicker_datepicker footer {
-    height: auto;
-    background-color: #fee;
+    height: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.dtpicker_datepicker footer .apply {
+    width: 135px;
+    height: 20px;
+    border-radius: 5px;
+    text-align: center;
+    font: 10pt sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+}
+.dtpicker_datepicker footer .apply:hover{
+    color: #fff;
+    background-color: #f66;
 }
 
 /* GRID */

@@ -23,12 +23,14 @@
         <button id="fpd" class="btn btn-default">Забрать дату</button>
         <button id="fpt" class="btn btn-default">Забрать текст</button>
         <button id="fps" class="btn btn-default">Дата - сегодня</button>
+        <button id="fpdp" class="btn btn-default">%</button>
     </div>
     <div class="input-group">   
         <div id="calendar_verif"></div>
         <button id="vpd" class="btn btn-default">Забрать дату</button>
         <button id="vpt" class="btn btn-default">Забрать текст</button>
         <button id="vps" class="btn btn-default">Дата - сегодня</button>
+        <button id="vpdp" class="btn btn-default">%</button>
     </div>
     <p></p>
 
@@ -55,9 +57,11 @@
             var vp = new DateTimePicker(v, {
                 format: 'd.m.Y',
                 className: 'form-control',
-                defaultDate: 9,
-                defaultMonth: 12,
-                defaultYear: 2345235
+                datePicker: true,
+                togglePickerOnBlur: false,
+                externalTrigger: $('#vpdp'),
+                externalTriggerClass: 'active',
+                applyBtn: true
             });
 
             $('#fpd').on('click', e => {
@@ -68,6 +72,13 @@
             });
             $('#fps').on('click', e => {
                 fp.setValue(new Date());
+            });
+            $('#fpdp').on('click', e => {
+                $(e.target).toggleClass('active');
+                if($(e.target).hasClass('active'))
+                    fp.showDatePicker();
+                else 
+                    fp.hideDatePicker();
             });
 
             $('#vpd').on('click', e => {
@@ -80,6 +91,16 @@
                 vp.setValue(new Date());
             });
 
+            // let t1, t2;
+            // $('#calendar_filter input').on('blur', function(){
+            //     t1 = Date.now();
+            // });
+
+            // $('#fpdp').on('focus', function () {
+            //     t2 = Date.now();
+            //     console.log(t1, t2, t2-t1);
+            // });
+            
             // setInterval(()=>{
             //     $('p').html('inputString: ' + fp.getValue().str +
             //                 '<br>datestr: '+ fp.getValue().date +

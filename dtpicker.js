@@ -47,7 +47,12 @@ function DateTimePicker(div, options){
             defaultMinutes: 0,
             defaultSeconds: 0,
             invalidClass: 'invalid',
-            datePicker: false
+            datePicker: false,
+            togglePickerOnBlur: true,
+            externalTrigger: null,
+            externalTriggerClass: 'active',
+            closeOnDateSelect: true,
+            applyBtn: false
         }, 
         options);
 
@@ -445,9 +450,9 @@ function DateTimePicker(div, options){
         var y = date.getFullYear(), 
             m = date.getMonth(),
             today = date.getDate(),
-            h = objValue.getHours(),
-            min = objValue.getMinutes(),
-            s = objValue.getSeconds(),
+            h = date.getHours(),
+            min = date.getMinutes(),
+            s = date.getSeconds(),
             first = new Date(y, m, 1).getDay(),
             lastPrev = new Date(y, m, 0).getDate(),
             thisMonthDays = new Date(y, m + 1, 0).getDate();
@@ -459,6 +464,7 @@ function DateTimePicker(div, options){
                 .on('click.dtpicker_grid', function () {
                     var date = new Date(y, m-1, Number($(this).html()), h, min, s);
                     navigateDatePicker('month', date);
+                    if(me.cfg.closeOnDateSelect) me.datePicker.div.hide();
                 });
         for(var d = 0; d < thisMonthDays; d++){
             me.datePicker.dayGrid[Math.floor((first + d)/7)+prevMonthOffset][(first+d)%7]
@@ -467,8 +473,11 @@ function DateTimePicker(div, options){
                 .on('click.dtpicker_grid', function () {
                     var date = new Date(y, m, Number($(this).html()), h, min, s);
                     setValue(date);
-                    $('.dtpicker_grid .selected').removeClass('selected');
-                    $(this).addClass('selected');
+                    if(me.cfg.closeOnDateSelect) me.datePicker.div.hide();
+                    else {
+                        $('.dtpicker_grid .selected').removeClass('selected');
+                        $(this).addClass('selected');
+                    }
                 }); 
         }
         for(d, i = 1; i < 43 - thisMonthDays - first - 7*prevMonthOffset; d++, i++){
@@ -478,6 +487,7 @@ function DateTimePicker(div, options){
                 .on('click.dtpicker_grid', function () {
                     var date = new Date(y, m+1, $(this).html(), h, min, s);
                     navigateDatePicker('month', date);
+                    if(me.cfg.closeOnDateSelect) me.datePicker.div.hide();
                 });
         }
     }
@@ -594,6 +604,10 @@ function DateTimePicker(div, options){
         me.datePicker.dayGrid = initDayGrid();
         me.datePicker.monthGrid = initMonthGrid();
         me.datePicker.yearGrid = initYearGrid();
+        if(me.cfg.applyBtn){
+            me.datePicker.footer = $('<footer></footer>').appendTo(me.datePicker.div);
+            me.datePicker.applyBtn = $('<span class="apply">Применить</span>').appendTo(me.datePicker.footer);
+        }
         var val = (me.cfg.value instanceof Date && !isNaN(me.cfg.value)) ? me.cfg.value : new Date();
         navigateDatePicker('month',val);
     }
@@ -624,8 +638,9 @@ function DateTimePicker(div, options){
             'H':0,
             'i':0,
             's':0
-        };
+        },
 
+        gotClicked = false;
 
             
     /* ------------------- html stuff */
@@ -647,7 +662,7 @@ function DateTimePicker(div, options){
      * Returns picker value with selected representation
      * @param {string} type - 'date' for Date() object; 'text' for string in selected format  
      */
-    me.getValue = function (type) {
+    function getValue(type) {
         //at final
         type = type || 'text';
         switch(type) {
@@ -659,6 +674,7 @@ function DateTimePicker(div, options){
                 return formatter(me.cfg.format);
         }
     }
+    me.getValue = getValue;
 
     /**
      * Sets all inner representations up to selected date
@@ -681,12 +697,30 @@ function DateTimePicker(div, options){
      * @param {string} format - selected representation
      * @returns date in selected representation
      */
-    me.getFormattedValue = function (format){
+    function getFormattedValue(format){
         return formatter(format);
     }
+    me.getFormattedValue = getFormattedValue;
 
+    me.showDatePicker = function() { me.datePicker.div.show(); }
+    me.hideDatePicker = function() { me.datePicker.div.hide(); }
     /* ------------------- event listeners */
 
+    if(me.cfg.externalTrigger !== null)
+        $(me.cfg.externalTrigger).on('click.dtpicker', function (){
+            $(this).toggleClass(me.cfg.externalTriggerClass);
+            if($(this).hasClass(me.cfg.externalTriggerClass))
+                me.datePicker.div.show();
+            else
+                me.datePicker.div.hide();
+        });
+    me.datePicker.div.on('mousedown.dtpicker', function (){
+        gotClicked = true;
+    });
+    if(me.cfg.applyBtn)
+        me.datePicker.applyBtn.on('click', function(){
+            me.datePicker.div.hide();
+        });
     me.input.on('keydown.dtpicker', function(e){
         var k = e.keyCode;
         if (!k === F5)
@@ -768,7 +802,10 @@ function DateTimePicker(div, options){
         inputString = inputString.substring(0, inputStringLength);
         if(!trimPlaceholders(inputString).length) clearValue();
     });
-
+    me.input.on('focus.dtpicker', function(){
+        if(me.cfg.togglePickerOnBlur)
+            me.datePicker.div.show();
+    });
     me.input.on('click.dtpicker', function () {
         var inputCaretPos = this.selectionStart;
         innerCaretPos = getInnerCaretPos(inputCaretPos);
@@ -815,7 +852,7 @@ function DateTimePicker(div, options){
         updateDateObject();
         dateComponentsToInputStringAndDisplay();
     });
-    me.input.on('blur.dtpicker', function () {
+    me.input.on('blur.dtpicker', function (e) {
         if(!trimPlaceholders(inputString).length) clearValue();
         else {
             $(this).trigger('datecomponentchanged.dtpicker', currentComponent);
@@ -829,5 +866,13 @@ function DateTimePicker(div, options){
             updateDateObject();
         }
         checkValidity();
+        if(me.cfg.togglePickerOnBlur) {
+            setTimeout(function(){
+                if(!gotClicked)
+                    me.datePicker.div.hide();
+                else
+                    gotClicked = false;
+            }, 20);
+        }
     });
 }
