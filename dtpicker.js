@@ -70,6 +70,10 @@ function DateTimePicker(div, options){
 
     /* ------------------- util methods */
 
+    $.fn.showFlex = function () {
+        $(this).css('display', 'flex');
+    }
+
     /**
      * Removes placeholders from beginning and ending of input string
      * 
@@ -464,7 +468,7 @@ function DateTimePicker(div, options){
      */
     var displayDayGrid = function(date){
         me.datePicker.div.find('.dtpicker_grid .day').off('.dtpicker_grid').removeClass('selected prevMonth nextMonth');
-        me.datePicker.div.find('.day_grid').show();
+        me.datePicker.div.find('.day_grid').showFlex();
         var y = date.getFullYear(), 
             m = date.getMonth(),
             today = date.getDate(),
@@ -616,11 +620,12 @@ function DateTimePicker(div, options){
     }
 
     var appendDatePicker = function () {
-        me.div.prop('position', 'relative');
+        me.div.css('position', 'relative');
         me.datePicker = {};
         me.datePicker.div = $('<div class="dtpicker_datepicker"><header></header><div class="dtpicker_grid"></div></div>')
             .appendTo(me.div)
-            .css('top', me.input.outerHeight()+'px');
+            .css('top', me.input.outerHeight(true)+'px')
+            .css('left', me.input.position().left+'px');
         me.datePicker.header = $('<span class="prev"></span><span class="today"></span><span class="text"></span><span class="next"></span<span>')
             .appendTo(me.datePicker.div.find('header'));
         me.datePicker.dayGrid = initDayGrid();
@@ -731,6 +736,16 @@ function DateTimePicker(div, options){
         return formatter(format);
     }
     me.getFormattedValue = getFormattedValue;
+
+    function setPickerPosition(position){
+        if(me.cfg.datePicker) {
+            if (position.left !== undefined)
+                me.datePicker.div.css('left', position.left);
+            if (position.top !== undefined)
+                me.datePicker.div.css('top', position.top);    
+        }
+    }
+    me.setPickerPosition = setPickerPosition;
 
     me.showDatePicker = function() { me.datePicker.div.show(); }
     me.hideDatePicker = function() { me.datePicker.div.hide(); }
@@ -858,7 +873,7 @@ function DateTimePicker(div, options){
         if(!trimPlaceholders(inputString).length) clearValue();
     });
     me.input.on('focus.dtpicker', function(){
-        if(me.cfg.togglePickerOnBlur)
+        if(me.cfg.datePicker && me.cfg.togglePickerOnBlur)
             me.datePicker.div.show();
     });
     me.input.on('click.dtpicker', function () {
@@ -921,7 +936,7 @@ function DateTimePicker(div, options){
             updateDateObject();
         }
         checkValidity();
-        if(me.cfg.togglePickerOnBlur) {
+        if(me.cfg.datePicker && me.cfg.togglePickerOnBlur) {
             setTimeout(function(){
                 if(!gotClicked)
                     me.datePicker.div.hide();

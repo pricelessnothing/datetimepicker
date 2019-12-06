@@ -18,98 +18,48 @@
     <title>test</title>
 </head>
 <body>
-    <div class="input-group">
-        <div id="calendar_filter"></div>
-        <button id="fpd" class="btn btn-default">Забрать дату</button>
-        <button id="fpt" class="btn btn-default">Забрать текст</button>
-        <button id="fps" class="btn btn-default">Дата - сегодня</button>
-        <button id="fpdp" class="btn btn-default">%</button>
-    </div>
-    <div class="input-group">   
-        <div id="calendar_verif"></div>
-        <button id="vpd" class="btn btn-default">Забрать дату</button>
-        <button id="vpt" class="btn btn-default">Забрать текст</button>
-        <button id="vps" class="btn btn-default">Дата - сегодня</button>
-        <button id="vpdp" class="btn btn-default">%</button>
-    </div>
-    <p></p>
-
-
-
-
-
-
-
+        <div class="modal fade" id="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">от:</span>
+                        <div id="calendar_filter"></div>
+                        <div class="input-group-btn"><div class="btn btn-primary">%</div></div>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+              </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+          </div><!-- /.modal -->
 
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="dtpicker.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script>
         $(function() {
+            $("#modal").modal();
             var f = $('#calendar_filter');
             var fp = new DateTimePicker(f, {
-                format: 'Y-m-d H:i:s',
-                className: 'form-control',
-                value: new Date(1997, 11, 9, 12, 12, 12),
-                datePicker: false,
-            });
-            var v = $('#calendar_verif');
-            var vp = new DateTimePicker(v, {
-                format: 'd.m.Y',
+                format: 'Y-m-d H:i:s', 
                 className: 'form-control',
                 datePicker: true,
-                togglePickerOnBlur: false,
-                externalTrigger: $('#vpdp'),
                 externalTriggerClass: 'active',
-                closeOnDateSelect: false,
-                footer: true,
-                lang: 'en'
+                externalTrigger: $('.input-group .btn')
             });
-
-            $('#fpd').on('click', e => {
-                alert(fp.getValue('date'));
-            });
-            $('#fpt').on('click', e => {
-                alert(fp.getFormattedValue('Ymd'));
-            });
-            $('#fps').on('click', e => {
-                fp.setValue(new Date());
-            });
-            // $('#fpdp').on('click', e => {
-            //     $(e.target).toggleClass('active');
-            //     if($(e.target).hasClass('active'))
-            //         fp.showDatePicker();
-            //     else 
-            //         fp.hideDatePicker();
-            // });
-
-            $('#vpd').on('click', e => {
-                alert(vp.getValue('date'));
-            });
-            $('#vpt').on('click', e => {
-                alert(vp.getValue('text'));
-            });
-            $('#vps').on('click', e => {
-                vp.setValue(new Date());
-            });
-
-            // let t1, t2;
-            // $('#calendar_filter input').on('blur', function(){
-            //     t1 = Date.now();
-            // });
-
-            // $('#fpdp').on('focus', function () {
-            //     t2 = Date.now();
-            //     console.log(t1, t2, t2-t1);
-            // });
-            
-            // setInterval(()=>{
-            //     $('p').html('inputString: ' + fp.getValue().str +
-            //                 '<br>datestr: '+ fp.getValue().date +
-            //                 '<br>caretPos: '+ fp.getValue().pos +
-            //                 '<br>components: '+ fp.getValue().comp +
-            //                 '<br>component: '+ fp.getValue().cur);
-            // }, 200)
+            $('#modal').on('shown.bs.modal', ()=>{
+                fp.setPickerPosition({
+                    left: $('input').position().left
+                });
+            })
         })
     </script>
 </body>
