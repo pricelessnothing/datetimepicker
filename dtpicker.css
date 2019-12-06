@@ -3,7 +3,6 @@
     background-color: #fff;
     box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
     width: 210px;
-    /* height: 300px; */
     z-index: 99;
     left: 0;
     box-sizing: border-box;
@@ -67,7 +66,7 @@
     font: 12pt sans-serif;
     font-weight: bold;
     text-align: center;
-    width: 120px;
+    width: 130px;
     cursor: pointer;
 }
 
@@ -86,9 +85,10 @@
     height: 30px;
     display: flex;
     align-items: center;
+    justify-content: space-around;
 }
 
-.dtpicker_datepicker footer .apply {
+.dtpicker_datepicker footer span {
     width: 135px;
     height: 20px;
     border-radius: 5px;
@@ -96,8 +96,10 @@
     font: 10pt sans-serif;
     font-weight: bold;
     cursor: pointer;
+    line-height: 20px;
 }
-.dtpicker_datepicker footer .apply:hover{
+.dtpicker_datepicker footer span:hover,
+.dtpicker_datepicker footer span:focus{
     color: #fff;
     background-color: #f66;
 }
