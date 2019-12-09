@@ -18,7 +18,7 @@
     <title>test</title>
 </head>
 <body>
-        <div class="modal fade" id="modal" tabindex="-1" role="dialog">
+        <!-- <div class="modal fade" id="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
                 <div class="modal-header">
@@ -37,29 +37,50 @@
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                   <button type="button" class="btn btn-primary">Save changes</button>
                 </div>
-              </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-          </div><!-- /.modal -->
+              </div>
+            </div>
+          </div> -->
+
+
+        <div class="input-group">
+          <span class="input-group-addon">от:</span>
+          <div id="calendar_filter"></div>
+          <div class="input-group-btn"><div class="btn btn-primary">%</div></div>
+        </div>
+
+        <p></p>
+
 
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="dtpicker.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script>
         $(function() {
-            $("#modal").modal();
+            // $("#modal").modal();
             var f = $('#calendar_filter');
             var fp = new DateTimePicker(f, {
                 format: 'Y-m-d H:i:s', 
                 className: 'form-control',
                 datePicker: true,
                 externalTriggerClass: 'active',
-                externalTrigger: $('.input-group .btn')
+                externalTrigger: $('.input-group .btn'),
+                value: new Date()
             });
-            $('#modal').on('shown.bs.modal', ()=>{
-                fp.setPickerPosition({
-                    left: $('input').position().left
-                });
-            })
+
+            setInterval(() => {
+              $('p').html(
+                'input string: ' + fp.debug().inputString + '<br>' +
+                'components: ' + fp.debug().components + '<br>' +
+                'current: ' + fp.debug().currentComponent + '<br>' +
+                'cursor: ' + fp.debug().innerCaretPos + '<br>' +
+                'objValue: ' + fp.debug().objValue + '<br>'
+              );
+            }, 200);
+            // $('#modal').on('shown.bs.modal', ()=>{
+            //     fp.setPickerPosition({
+            //         left: $('input').position().left
+            //     });
+            // })
         })
     </script>
 </body>

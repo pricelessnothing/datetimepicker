@@ -20,6 +20,12 @@ function DateTimePicker(div, options){
         ARROWUP = 38,
         ARROWRIGHT = 39,
         ARROWDOWN = 40,
+        CTRL = 17,
+        VKEY = 86,
+        CKEY = 67,
+        AKEY = 65,
+        XKEY = 88,
+        TAB = 9,
         END = 35,
         HOME = 36,
         F5 = 116;
@@ -112,17 +118,17 @@ function DateTimePicker(div, options){
      * @param {string} mask - this.cfg.mask
      */
     var objValueToInputString = function () {
-        var res = '';
+        var res = '', i;
         if (!objValue){
             var _mask = mask.split('');
-            for(var i in _mask){
+            for(i in _mask){
                 if (_mask[i] === me.cfg.placeholder)
                     res+=_mask[i];
             }
         }
         else {
             var str = me.cfg.format.split('');
-            for (var i in str){
+            for (i in str){
                 if (/[dmYHis]/.test(str[i])){
                     switch(str[i]){
                         case 'd':
@@ -148,7 +154,7 @@ function DateTimePicker(div, options){
      * Returns position of cursor in inner representation
      * 
      * @param {number} pos - position of cursor in input
-     * @returns {number} - position of cursor in inner representation
+     * @returns {number} position of cursor in inner representation
      */
     var getInnerCaretPos = function(pos) {
         var txt = me.input.val().split('');
@@ -165,7 +171,7 @@ function DateTimePicker(div, options){
      * 
      * @returns input string applied on mask
      */
-    var displayInputString = function () {
+    var getInputString = function () {
         var res = makeMask().split('');
         var str = inputString.split('');
         var i = 0, j = 0;
@@ -231,7 +237,7 @@ function DateTimePicker(div, options){
         var char = componentString[pos];
         if(!/[dmYHis]/.test(char) || typeof char === 'undefined')
             char = componentString[pos-1];
-        return /[dmYHis]/.test(char) ? char : 'undefined';
+        return /[dmYHis]/.test(char) ? char : undefined;
     };
 
     /**
@@ -335,7 +341,7 @@ function DateTimePicker(div, options){
     /**
      * Sets input string value of date components then displays it considering mask
      */
-    var dateComponentsToInputStringAndDisplay = function () {
+    var dateComponentsToInputString = function () {
         var str = me.cfg.format.split('');
         var res = '';
         for(var i in str){
@@ -343,7 +349,10 @@ function DateTimePicker(div, options){
                 res+=dateComponents[str[i]];
         }
         inputString = res;
-        me.input.val(displayInputString());
+    }
+
+    var displayInputString = function() {
+        me.input.val(getInputString());
         setInputCaretPos(innerCaretPos);
     }
 
@@ -386,6 +395,122 @@ function DateTimePicker(div, options){
             navigateDatePicker('empty', new Date(dateComponents['Y'], Number(dateComponents['m'] - 1), dateComponents['d'], dateComponents['H'], dateComponents['i'], dateComponents['s']));
         }
     }
+
+    /**
+     * Returns letter of next component leaning on currentComponent value
+     * 
+     * @param {boolean} forward - direction of search: true if to right, false otherwise
+     */
+    var getNextComponent = function (forward) {
+        var char = currentComponent;
+        var str = me.cfg.format.split('');
+        var i = str.indexOf(char);
+        if (forward) {
+            do {
+                if (i < str.length - 1)
+                    char = str[++i];
+                if (/[dmYHis]/.test(char)) break;
+            } while(i < str.length);
+        }
+        else {
+            do {
+                if (i)
+                    char = str[--i];
+                if(/[dmYHis]/.test(char)) break;
+            } while(i);
+        }
+        return char;
+    }
+
+    /**
+     * Returns position of first date component symbol in formatted string
+     * 
+     * @returns first symbol positions
+     */
+    var navigateComponent = function (component) {
+        var str = componentString.split(''),
+            sStart = str.indexOf(component);
+        for (var sEnd = sStart; sEnd < str.length; sEnd++)
+            if (str[sEnd] !== component) break;
+        me.input[0].setSelectionRange(sStart, sEnd);  
+        return sStart;
+    }
+
+    var incComponentValue = function () {
+        if (!(objValue instanceof Date) || isNaN(objValue)){
+            objValue = new Date();
+        }
+        var d = objValue.getDate(),
+            m = objValue.getMonth(),
+            y = objValue.getFullYear(),
+            h = objValue.getHours(),
+            i = objValue.getMinutes(),
+            s = objValue.getSeconds();
+        switch(currentComponent){
+            case 'd': 
+                objValue = new Date(y, m, d+1, h, i, s);
+                break;
+            case 'm': 
+                objValue = new Date(y, m+1, d, h, i, s);
+                break;
+            case 'Y': 
+                objValue = new Date(y+1, m, d, h, i, s);
+                break;
+            case 'H': 
+                objValue = new Date(y, m, d, h+1, i, s);
+                break;
+            case 'i': 
+                objValue = new Date(y, m, d, h, i+1, s);
+                break;
+            case 's': 
+                objValue = new Date(y, m, d, h, i, s+1);
+                break;
+        }
+        inputString = objValueToInputString();
+        inputStringToDateComponents(me.input[0].selectionStart);
+        displayInputString();
+        navigateComponent(currentComponent);
+        navigateDatePicker('empty', objValue);
+    }
+
+    var decComponentValue = function () {
+        if (!(objValue instanceof Date) || isNaN(objValue)){
+            objValue = new Date();
+        }
+        var d = objValue.getDate(),
+            m = objValue.getMonth(),
+            y = objValue.getFullYear(),
+            h = objValue.getHours(),
+            i = objValue.getMinutes(),
+            s = objValue.getSeconds();
+        switch(currentComponent){
+            case 'd': 
+                objValue = new Date(y, m, d-1, h, i, s);
+                break;
+            case 'm': 
+                objValue = new Date(y, m-1, d, h, i, s);
+                break;
+            case 'Y': 
+                objValue = new Date(y-1, m, d, h, i, s);
+                break;
+            case 'H': 
+                objValue = new Date(y, m, d, h-1, i, s);
+                break;
+            case 'i': 
+                objValue = new Date(y, m, d, h, i-1, s);
+                break;
+            case 's': 
+                objValue = new Date(y, m, d, h, i, s-1);
+                break;
+        }
+        inputString = objValueToInputString();
+        inputStringToDateComponents(me.input[0].selectionStart);
+        displayInputString();
+        navigateComponent(currentComponent);
+        navigateDatePicker('empty', objValue);
+    }
+
+//----------------- DATEPICKER SECTION -------------------------------------
 
     /**
      * Displays required grid and header
@@ -464,7 +589,7 @@ function DateTimePicker(div, options){
     /**
      * Displays day grid
      * 
-     * @param {Date} date - initial picker value 
+     * @param {Date} date - selected date 
      */
     var displayDayGrid = function(date){
         me.datePicker.div.find('.dtpicker_grid .day').off('.dtpicker_grid').removeClass('selected prevMonth nextMonth');
@@ -519,6 +644,11 @@ function DateTimePicker(div, options){
         }
     }
 
+    /**
+     * Displays month grid
+     * 
+     * @param {Date} date - selected date 
+     */
     var displayMonthGrid = function(date){
         var y = date.getFullYear(),
             m = date.getMonth(),
@@ -553,6 +683,11 @@ function DateTimePicker(div, options){
                 });
     }
 
+    /**
+     * Displays year grid
+     * 
+     * @param {Date} date - selected date 
+     */
     var displayYearGrid = function(date){
         var y = date.getFullYear(),
             m = date.getMonth(),
@@ -586,6 +721,11 @@ function DateTimePicker(div, options){
         }
     }
 
+    /**
+     * Append DOM object containing day controls for 'month' or 'empty' state 
+     *  
+     * @returns array 7 x 6 of Nodes
+     */
     var initDayGrid = function(){
         var dayGrid = $('<div class="day_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
         var arr = [];
@@ -597,6 +737,11 @@ function DateTimePicker(div, options){
         return arr;
     }
 
+    /**
+     * Append DOM object containing month controls for 'year' state
+     * 
+     * @returns array 5 x 4 of Nodes
+     */
     var initMonthGrid = function(){
         var monthGrid = $('<div class="month_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
         var arr = [];
@@ -608,6 +753,11 @@ function DateTimePicker(div, options){
         return arr;
     }
 
+    /**
+     * Append DOM object containing years controls for 'decade' state
+     * 
+     * @returns array 4 x 4 of Nodes
+     */
     var initYearGrid = function(){
         var yearGrid = $('<div class="year_grid"></div>').appendTo(me.datePicker.div.find('.dtpicker_grid')[0]);
         var arr = [];
@@ -619,6 +769,9 @@ function DateTimePicker(div, options){
         return arr;
     }
 
+    /**
+     * Some DOM manipulations to append picker element
+     */
     var appendDatePicker = function () {
         me.div.css('position', 'relative');
         me.datePicker = {};
@@ -683,7 +836,7 @@ function DateTimePicker(div, options){
     me.input = $('<input type="text" >')
         .appendTo(me.div)
         .addClass(me.cfg.className)
-        .val(displayInputString());
+        .val(getInputString());
 
     if (me.cfg.datePicker === true) {
         appendDatePicker();
@@ -692,6 +845,17 @@ function DateTimePicker(div, options){
     inputStringToDateComponents(0);
 
     /* ------------------- public methods */
+
+    function debug() {
+        return {
+            inputString: inputString,
+            components: JSON.stringify(dateComponents),
+            currentComponent: currentComponent,
+            innerCaretPos: innerCaretPos,
+            objValue: objValue
+        };
+    } 
+    me.debug = debug;
 
     /**
      * Returns picker value with selected representation
@@ -720,7 +884,7 @@ function DateTimePicker(div, options){
             objValue = date;
             inputString = objValueToInputString();
             inputStringToDateComponents(0);
-            me.input.val(displayInputString());
+            me.input.val(getInputString());
         }
         else clearValue();    
     }
@@ -778,8 +942,15 @@ function DateTimePicker(div, options){
     }
     me.input.on('keydown.dtpicker', function(e){
         var k = e.keyCode;
-        if (!k === F5)
-            e.preventDefault();
+        if (k === F5 || k === TAB || k === CTRL || 
+            (k === VKEY && e.ctrlKey) ||
+            (k === CKEY && e.ctrlKey) ||
+            (k === XKEY && e.ctrlKey) ||
+            (k === AKEY && e.ctrlKey)
+            )
+            return;
+
+        e.preventDefault();
 
         var inputCaretPos = this.selectionStart;
         var selectionEnd = getInnerCaretPos(this.selectionEnd);
@@ -809,14 +980,36 @@ function DateTimePicker(div, options){
             inputStringToDateComponents(this.selectionStart);
         }
         else if(k === ARROWLEFT || k === ARROWRIGHT || k === ARROWUP || k === ARROWDOWN){
-            //TODO: inc/dec component value if ctrl-up, ctrl-down
-            //TODO: switch components if ctrl-left, ctrl-right      
             switch(k){
                 case ARROWLEFT:
-                    if(innerCaretPos) inputCaretPos--;
+                    if (e.ctrlKey)
+                        inputCaretPos = navigateComponent(getNextComponent(false));
+                    else
+                        if(inputCaretPos !== this.selectionEnd)
+                            this.setSelectionRange(inputCaretPos, inputCaretPos);
+                        else
+                            if(innerCaretPos){
+                                inputCaretPos--;
+                                this.setSelectionRange(inputCaretPos, inputCaretPos);
+                            }
                     break;
                 case ARROWRIGHT:
-                    if(innerCaretPos < inputStringLength) inputCaretPos++;
+                    if (e.ctrlKey)
+                        inputCaretPos = navigateComponent(getNextComponent(true));
+                    else
+                        if(inputCaretPos !== this.selectionEnd) 
+                            this.setSelectionRange(this.selectionEnd, this.selectionEnd);
+                        else
+                            if(innerCaretPos < inputStringLength){
+                                inputCaretPos++;
+                                this.setSelectionRange(inputCaretPos, inputCaretPos);
+                            } 
+                    break;
+                case ARROWUP:
+                    incComponentValue();
+                    break;
+                case ARROWDOWN:
+                    decComponentValue();
                     break;
             }
             inputStringToDateComponents(inputCaretPos);
@@ -868,9 +1061,12 @@ function DateTimePicker(div, options){
                 if(newPos < 0) newPos = 0;
                 inputStringToDateComponents(newPos);
             }  
+            inputString = inputString.substring(0, inputStringLength);
+            if(!trimPlaceholders(inputString).length) clearValue();
+            me.input.val(getInputString());
+            setInputCaretPos(innerCaretPos+1);
+            checkValidity();
         }
-        inputString = inputString.substring(0, inputStringLength);
-        if(!trimPlaceholders(inputString).length) clearValue();
     });
     me.input.on('focus.dtpicker', function(){
         if(me.cfg.datePicker && me.cfg.togglePickerOnBlur)
@@ -880,11 +1076,6 @@ function DateTimePicker(div, options){
         var inputCaretPos = this.selectionStart;
         innerCaretPos = getInnerCaretPos(inputCaretPos);
         inputStringToDateComponents(inputCaretPos);
-    });
-    me.input.on('input.dtpicker', function () {
-        me.input.val(displayInputString());
-        setInputCaretPos(innerCaretPos+1);
-        checkValidity();
     });
     me.input.on('paste.dtpicker', function () {
         //TODO: try work with Date() object
@@ -920,7 +1111,7 @@ function DateTimePicker(div, options){
             if(comp_value.includes(me.cfg.placeholder))
                 dateComponents[comp] = ('000' + trimPlaceholders(comp_value)).slice(comp === 'Y' ? -4 : -2);
         updateDateObject();
-        dateComponentsToInputStringAndDisplay();
+        dateComponentsToInputString();
     });
     me.input.on('blur.dtpicker', function () {
         if(!trimPlaceholders(inputString).length) clearValue();
@@ -932,7 +1123,8 @@ function DateTimePicker(div, options){
                     setComponentDefault(comps[c]);
                 }
             }     
-            dateComponentsToInputStringAndDisplay();
+            dateComponentsToInputString();
+            displayInputString();
             updateDateObject();
         }
         checkValidity();
