@@ -452,6 +452,8 @@ function DateTimePicker(div, options){
                 break;
             case 'm': 
                 objValue = new Date(y, m+1, d, h, i, s);
+                if (objValue.getDate() !== d)
+                    objValue = new Date(y, m+2, 0, h, i, s);
                 break;
             case 'Y': 
                 objValue = new Date(y+1, m, d, h, i, s);
