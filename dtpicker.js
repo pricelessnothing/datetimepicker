@@ -432,8 +432,8 @@ function DateTimePicker(div, options){
             sStart = str.indexOf(component);
         for (var sEnd = sStart; sEnd < str.length; sEnd++)
             if (str[sEnd] !== component) break;
-        me.input[0].setSelectionRange(sStart, sEnd);  
-        return sStart;
+       // me.input[0].setSelectionRange(sStart, sEnd);  
+        return [sStart, sEnd];
     }
 
     var incComponentValue = function () {
@@ -467,9 +467,6 @@ function DateTimePicker(div, options){
                 break;
         }
         inputString = objValueToInputString();
-        inputStringToDateComponents(me.input[0].selectionStart);
-        displayInputString();
-        navigateComponent(currentComponent);
         navigateDatePicker('empty', objValue);
     }
 
@@ -980,40 +977,56 @@ function DateTimePicker(div, options){
             inputStringToDateComponents(this.selectionStart);
         }
         else if(k === ARROWLEFT || k === ARROWRIGHT || k === ARROWUP || k === ARROWDOWN){
+            var selection;
             switch(k){
                 case ARROWLEFT:
-                    if (e.ctrlKey)
-                        inputCaretPos = navigateComponent(getNextComponent(false));
+                    if (e.ctrlKey){
+                        selection = navigateComponent(getNextComponent(false));
+                        inputCaretPos = selection[0];
+                        selectionEnd = selection[1];
+                    }
                     else
                         if(inputCaretPos !== this.selectionEnd)
-                            this.setSelectionRange(inputCaretPos, inputCaretPos);
-                        else
-                            if(innerCaretPos){
-                                inputCaretPos--;
-                                this.setSelectionRange(inputCaretPos, inputCaretPos);
-                            }
+                            selectionEnd = inputCaretPos;
+                        else if (innerCaretPos)
+                            selectionEnd = --inputCaretPos;
                     break;
                 case ARROWRIGHT:
-                    if (e.ctrlKey)
-                        inputCaretPos = navigateComponent(getNextComponent(true));
+                    if (e.ctrlKey){
+                        selection = navigateComponent(getNextComponent(true));
+                        inputCaretPos = selection[0];
+                        selectionEnd = selection[1];
+                    }
                     else
                         if(inputCaretPos !== this.selectionEnd) 
-                            this.setSelectionRange(this.selectionEnd, this.selectionEnd);
+                            inputCaretPos = selectionEnd = this.selectionEnd;
                         else
-                            if(innerCaretPos < inputStringLength){
-                                inputCaretPos++;
-                                this.setSelectionRange(inputCaretPos, inputCaretPos);
-                            } 
+                            if(innerCaretPos < inputStringLength)
+                                selectionEnd = ++inputCaretPos;
+                            else
+                                selectionEnd = inputCaretPos;
                     break;
                 case ARROWUP:
                     incComponentValue();
+                    inputStringToDateComponents(inputCaretPos);
+                    displayInputString();
+                    selection = navigateComponent(currentComponent);
+                    inputCaretPos = selection[0];
+                    selectionEnd = selection[1];
                     break;
                 case ARROWDOWN:
                     decComponentValue();
+                    inputStringToDateComponents(inputCaretPos);
+                    displayInputString();
+                    selection = navigateComponent(currentComponent);
+                    inputCaretPos = selection[0];
+                    selectionEnd = selection[1];
                     break;
             }
             inputStringToDateComponents(inputCaretPos);
+            me.input.val(getInputString());
             innerCaretPos = getInnerCaretPos(inputCaretPos);
+            this.setSelectionRange(inputCaretPos, selectionEnd);
         }
         else if (k === ENTER){
             var i = this.selectionStart;
@@ -1065,8 +1078,8 @@ function DateTimePicker(div, options){
             if(!trimPlaceholders(inputString).length) clearValue();
             me.input.val(getInputString());
             setInputCaretPos(innerCaretPos+1);
-            checkValidity();
         }
+        checkValidity();
     });
     me.input.on('focus.dtpicker', function(){
         if(me.cfg.datePicker && me.cfg.togglePickerOnBlur)
