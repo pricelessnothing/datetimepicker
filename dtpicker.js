@@ -457,6 +457,8 @@ function DateTimePicker(div, options){
                 break;
             case 'Y': 
                 objValue = new Date(y+1, m, d, h, i, s);
+                if (objValue.getDate() !== d)
+                    objValue = new Date(y+1, m+1, 0, h, i, s);
                 break;
             case 'H': 
                 objValue = new Date(y, m, d, h+1, i, s);
@@ -488,9 +490,13 @@ function DateTimePicker(div, options){
                 break;
             case 'm': 
                 objValue = new Date(y, m-1, d, h, i, s);
+                if (objValue.getDate() !== d)
+                    objValue = new Date(y, m, 0, h, i, s);
                 break;
             case 'Y': 
                 objValue = new Date(y-1, m, d, h, i, s);
+                if (objValue.getDate() !== d)
+                    objValue = new Date(y-1, m+1, 0, h, i, s);
                 break;
             case 'H': 
                 objValue = new Date(y, m, d, h-1, i, s);
@@ -987,6 +993,11 @@ function DateTimePicker(div, options){
                         inputCaretPos = selection[0];
                         selectionEnd = selection[1];
                     }
+                    else if (e.shiftKey){
+                        if(innerCaretPos)
+                            inputCaretPos = this.selectionStart - 1;
+                        selectionEnd = this.selectionEnd;
+                    }
                     else
                         if(inputCaretPos !== this.selectionEnd)
                             selectionEnd = inputCaretPos;
@@ -998,6 +1009,10 @@ function DateTimePicker(div, options){
                         selection = navigateComponent(getNextComponent(true));
                         inputCaretPos = selection[0];
                         selectionEnd = selection[1];
+                    }
+                    else if(e.shiftKey){
+                        inputCaretPos = this.selectionStart;
+                        selectionEnd = this.selectionEnd + 1;
                     }
                     else
                         if(inputCaretPos !== this.selectionEnd) 
