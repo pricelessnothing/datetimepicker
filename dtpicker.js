@@ -1167,4 +1167,29 @@ function DateTimePicker(div, options){
             }, 20);
         }
     });
+    me.input.on('mousewheel.dtpicker wheel.dtpicker', function(e){
+        var selection, inputCaretPos, selectionEnd;
+        if (e.originalEvent.deltaY < 0){
+            incComponentValue();
+            displayInputString();
+            selection = navigateComponent(currentComponent);
+            inputCaretPos = selection[0];
+            selectionEnd = selection[1];
+            inputStringToDateComponents(inputCaretPos);
+            me.input.val(getInputString());
+            innerCaretPos = getInnerCaretPos(inputCaretPos);
+            this.setSelectionRange(inputCaretPos, selectionEnd);
+        }
+        else{
+            decComponentValue();
+            displayInputString();
+            selection = navigateComponent(currentComponent);
+            inputCaretPos = selection[0];
+            selectionEnd = selection[1];
+            inputStringToDateComponents(inputCaretPos);
+            me.input.val(getInputString());
+            innerCaretPos = getInnerCaretPos(inputCaretPos);
+            this.setSelectionRange(inputCaretPos, selectionEnd);
+        }
+    });
 }
