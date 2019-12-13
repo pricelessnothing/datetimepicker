@@ -951,7 +951,9 @@ function DateTimePicker(div, options){
             (k === VKEY && e.ctrlKey) ||
             (k === CKEY && e.ctrlKey) ||
             (k === XKEY && e.ctrlKey) ||
-            (k === AKEY && e.ctrlKey)
+            (k === AKEY && e.ctrlKey) ||
+            (k === ARROWLEFT && e.shiftKey && !e.ctrlKey) ||
+            (k === ARROWRIGHT && e.shiftKey && !e.ctrlKey)
             )
             return;
 
@@ -993,11 +995,6 @@ function DateTimePicker(div, options){
                         inputCaretPos = selection[0];
                         selectionEnd = selection[1];
                     }
-                    else if (e.shiftKey){
-                        if(innerCaretPos)
-                            inputCaretPos = this.selectionStart - 1;
-                        selectionEnd = this.selectionEnd;
-                    }
                     else
                         if(inputCaretPos !== this.selectionEnd)
                             selectionEnd = inputCaretPos;
@@ -1009,10 +1006,6 @@ function DateTimePicker(div, options){
                         selection = navigateComponent(getNextComponent(true));
                         inputCaretPos = selection[0];
                         selectionEnd = selection[1];
-                    }
-                    else if(e.shiftKey){
-                        inputCaretPos = this.selectionStart;
-                        selectionEnd = this.selectionEnd + 1;
                     }
                     else
                         if(inputCaretPos !== this.selectionEnd) 
