@@ -6,7 +6,7 @@
  * @param {*} div - selected div
  * @param {*} options - selected options
  */
-function DateTimePicker(div, options){
+var DateTimePicker = function(div, options){
 
     var KEY0 = 48,
         KEY9 = 57,
@@ -49,6 +49,7 @@ function DateTimePicker(div, options){
     me.div = $(div[0]);
 
     me.datecomponentchanged = new CustomEvent('datecomponentchanged');
+    DateTimePicker.instances = DateTimePicker.instances || [];
 
     me.cfg = $.extend(
         {
@@ -834,12 +835,14 @@ function DateTimePicker(div, options){
             's':0
         };
             
-    /* ------------------- html stuff */
+    /* ------------------- init stuff */
 
     me.input = $('<input type="text" >')
         .appendTo(me.div)
         .addClass(me.cfg.className)
         .val(getInputString());
+
+    DateTimePicker.instances.push(this);
 
     if (me.cfg.datePicker === true) {
         appendDatePicker();
@@ -914,8 +917,22 @@ function DateTimePicker(div, options){
     }
     me.setPickerPosition = setPickerPosition;
 
-    me.showDatePicker = function() { me.datePicker.div.show(); }
-    me.hideDatePicker = function() { me.datePicker.div.hide(); }
+    function showDatePicker() { 
+        me.datePicker.div.showFlex(); 
+        if (me.cfg.externalTrigger !== null){
+            me.cfg.externalTrigger.toggleClass(me.cfg.externalTriggerClass, true);
+        } 
+    }
+    me.showDatePicker = showDatePicker;
+
+    function hideDatePicker() { 
+        me.datePicker.div.hide(); 
+        if (me.cfg.externalTrigger !== null){
+            me.cfg.externalTrigger.toggleClass(me.cfg.externalTriggerClass, false);
+        } 
+    }
+    me.hideDatePicker = hideDatePicker;
+
     /* ------------------- event listeners */
 
     if(me.cfg.datePicker){
@@ -942,7 +959,20 @@ function DateTimePicker(div, options){
         if(me.cfg.closePickerOnBlur)
             me.datePicker.div.on('blur', function (){
                 me.datePicker.div.hide();
-            })
+            });
+        if (!$._data(window, 'events')['click'] || !$._data(window, 'events')['click'].filter(function(el) {
+            return el.namespace === 'dtpicker';
+        }))
+        $(window).on('click.dtpicker', function (e) {
+            var els = e.originalEvent.path;
+            DateTimePicker.instances.forEach(function(dtp){
+                if(me.cfg.datePicker && me.cfg.closePickerOnBlur){
+                    if(els.includes(dtp.input[0]) || els.includes(dtp.datePicker.div[0]) || (dtp.cfg.externalTrigger !== null && els.includes(dtp.cfg.externalTrigger[0]))) 
+                        return;
+                        dtp.hideDatePicker();
+                }
+            });
+        });
     }
     me.input.on('keydown.dtpicker', function(e){
         var k = e.keyCode;
@@ -1173,17 +1203,6 @@ function DateTimePicker(div, options){
             me.input.val(getInputString());
             innerCaretPos = getInnerCaretPos(inputCaretPos);
             this.setSelectionRange(inputCaretPos, selectionEnd);
-        }
-    });
-    $(window).on('click.dtpicker', function (e) {
-        var els = e.originalEvent.path;
-        if(me.cfg.datePicker && me.cfg.closePickerOnBlur){
-            if(els.includes(me.input[0]) || els.includes(me.datePicker.div[0]) || (me.cfg.externalTrigger !== null && els.includes(me.cfg.externalTrigger[0]))) 
-                return;
-            me.datePicker.div.hide();
-            if (me.cfg.externalTrigger !== null){
-                me.cfg.externalTrigger.toggleClass(me.cfg.externalTriggerClass, false);
-            } 
         }
     });
 }
