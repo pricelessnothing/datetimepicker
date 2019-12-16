@@ -44,10 +44,14 @@
 
         <div class="input-group">
           <span class="input-group-addon">от:</span>
-          <div id="calendar_filter"></div>
-          <div class="input-group-btn"><div class="btn btn-primary">%</div></div>
+          <div id="c1"></div>
+          <div class="input-group-btn"><div class="btn btn-primary f1">%</div></div>
         </div>
-
+        <div class="input-group">
+          <span class="input-group-addon">от:</span>
+          <div id="c2"></div>
+          <div class="input-group-btn"><div class="btn btn-primary f2">%</div></div>
+        </div>
         <p></p>
 
 
@@ -57,25 +61,34 @@
     <script>
         $(function() {
             // $("#modal").modal();
-            var f = $('#calendar_filter');
-            var fp = new DateTimePicker(f, {
+            var f1 = $('#c1'), f2 = $('#c2');
+            var fp1 = new DateTimePicker(f1, {
                 format: 'Y-m-d H:i:s', 
                 className: 'form-control',
                 datePicker: true,
+                openPickerOnFocus: false,
                 externalTriggerClass: 'active',
-                externalTrigger: $('.input-group .btn'),
+                externalTrigger: $('.f1'),
                 value: new Date()
             });
-
-            setInterval(() => {
-              $('p').html(
-                'input string: ' + fp.debug().inputString + '<br>' +
-                'components: ' + fp.debug().components + '<br>' +
-                'current: ' + fp.debug().currentComponent + '<br>' +
-                'cursor: ' + fp.debug().innerCaretPos + '<br>' +
-                'objValue: ' + fp.debug().objValue + '<br>'
-              );
-            }, 200);
+            var fp2 = new DateTimePicker(f2, {
+                format: 'Y-m-d H:i:s', 
+                className: 'form-control',
+                datePicker: true,
+                openPickerOnFocus: false,
+                externalTriggerClass: 'active',
+                externalTrigger: $('.f2'),
+                value: new Date()
+            });
+            // setInterval(() => {
+            //   $('p').html(
+            //     'input string: ' + fp.debug().inputString + '<br>' +
+            //     'components: ' + fp.debug().components + '<br>' +
+            //     'current: ' + fp.debug().currentComponent + '<br>' +
+            //     'cursor: ' + fp.debug().innerCaretPos + '<br>' +
+            //     'objValue: ' + fp.debug().objValue + '<br>'
+            //   );
+            // }, 200);
             // $('#modal').on('shown.bs.modal', ()=>{
             //     fp.setPickerPosition({
             //         left: $('input').position().left

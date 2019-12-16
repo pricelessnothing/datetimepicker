@@ -64,7 +64,8 @@ function DateTimePicker(div, options){
             defaultSeconds: 0,
             invalidClass: 'invalid',
             datePicker: false,
-            togglePickerOnBlur: true,
+            openPickerOnFocus: true,
+            closePickerOnBlur: true,
             externalTrigger: null,
             externalTriggerClass: 'active',
             closeOnDateSelect: true,
@@ -831,10 +832,7 @@ function DateTimePicker(div, options){
             'H':0,
             'i':0,
             's':0
-        },
-
-        gotClicked = false;
-
+        };
             
     /* ------------------- html stuff */
 
@@ -921,9 +919,6 @@ function DateTimePicker(div, options){
     /* ------------------- event listeners */
 
     if(me.cfg.datePicker){
-        me.datePicker.div.on('mousedown.dtpicker', function (){
-            gotClicked = true;
-        });
         if(me.cfg.externalTrigger !== null)
             $(me.cfg.externalTrigger).on('click.dtpicker', function (){
                 $(this).toggleClass(me.cfg.externalTriggerClass);
@@ -944,6 +939,10 @@ function DateTimePicker(div, options){
                     me.cfg.externalTrigger.toggleClass(me.cfg.externalTriggerClass, false);
             });
         }
+        if(me.cfg.closePickerOnBlur)
+            me.datePicker.div.on('blur', function (){
+                me.datePicker.div.hide();
+            })
     }
     me.input.on('keydown.dtpicker', function(e){
         var k = e.keyCode;
@@ -1040,7 +1039,6 @@ function DateTimePicker(div, options){
         }
         else if (k === ENTER){
             var i = this.selectionStart;
-            gotClicked = true;
             me.input.trigger('blur');
             me.input.focus();
             this.selectionStart = i;
@@ -1092,7 +1090,7 @@ function DateTimePicker(div, options){
         checkValidity();
     });
     me.input.on('focus.dtpicker', function(){
-        if(me.cfg.datePicker && me.cfg.togglePickerOnBlur)
+        if(me.cfg.datePicker && me.cfg.openPickerOnFocus)
             me.datePicker.div.show();
     });
     me.input.on('click.dtpicker', function () {
@@ -1151,14 +1149,6 @@ function DateTimePicker(div, options){
             updateDateObject();
         }
         checkValidity();
-        if(me.cfg.datePicker && me.cfg.togglePickerOnBlur) {
-            setTimeout(function(){
-                if(!gotClicked)
-                    me.datePicker.div.hide();
-                else
-                    gotClicked = false;
-            }, 20);
-        }
     });
     me.input.on('mousewheel.dtpicker wheel.dtpicker', function(e){
         var selection, inputCaretPos, selectionEnd;
@@ -1183,6 +1173,17 @@ function DateTimePicker(div, options){
             me.input.val(getInputString());
             innerCaretPos = getInnerCaretPos(inputCaretPos);
             this.setSelectionRange(inputCaretPos, selectionEnd);
+        }
+    });
+    $(window).on('click.dtpicker', function (e) {
+        var els = e.originalEvent.path;
+        if(me.cfg.datePicker && me.cfg.closePickerOnBlur){
+            if(els.includes(me.input[0]) || els.includes(me.datePicker.div[0]) || (me.cfg.externalTrigger !== null && els.includes(me.cfg.externalTrigger[0]))) 
+                return;
+            me.datePicker.div.hide();
+            if (me.cfg.externalTrigger !== null){
+                me.cfg.externalTrigger.toggleClass(me.cfg.externalTriggerClass, false);
+            } 
         }
     });
 }
