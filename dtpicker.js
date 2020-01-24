@@ -371,7 +371,8 @@ var DateTimePicker = function(div, options){
             'i':0,
             's':0
         };
-        inputString = objValueToInputString(); 
+        inputString = objValueToInputString();
+        displayInputString();
     }
 
     /**
